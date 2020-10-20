@@ -111,7 +111,17 @@ def getWordsFromFile(file):
             if len(row) > 1:
                 words.append(row[1])
         f.close()
-    return words
+    return formatWordsFromFile(words)
+
+
+def formatWordsFromFile(tempList):
+    allWords = []
+    for sensorWords in tempList:
+        sensorWords = sensorWords.replace("]", "")
+        sensorWords = sensorWords.replace("'", "")
+        wrd = sensorWords.split(", ")
+        allWords.append(wrd)
+    return allWords
 
 
 def getUniqueWordsInGesture(allWordsInGesture):
@@ -124,24 +134,29 @@ def getUniqueWordsInGesture(allWordsInGesture):
     return uniqueWords
 
 
-def calcTfValue(word, allWordsInFile):
+def calcTfValue(wordTuple, allWordsInFile):
     totalWords = len(allWordsInFile[0]) * 20
     num_occurs = 0
-    for sensor in allWordsInFile:
-        for wrd in sensor:
-            if wrd == word:
+    for sensor in range(len(allWordsInFile)):
+        for wrd in allWordsInFile[sensor]:
+            if wrd == wordTuple[2] and (sensor+1) == wordTuple[1]:
                 num_occurs += 1
     value = num_occurs / totalWords
     return value
 
 
-def calcIdfValue(word, allWordsInFile):
-    numObjs = len(allWordsInFile)
-    numObjsWithWord = 0
+def calcIdfValue(wordTuple, direct):
+    numObjs = 60
+    numObjsWithWord = 1
+    sensorId = wordTuple[1]
 
-    for sensor in allWordsInFile:
-        if word in sensor:
-            numObjsWithWord += 1
+    for file in os.listdir(directory + direct):
+        if file != gestureFile and file.endswith(".wrd"):
+            file = directory + direct + "/" + file
+            gestFileWords = getWordsFromFile(file)
+            if word_tuple[2] in gestFileWords[sensorId-1]:
+                numObjsWithWord += 1
+                break
 
     value = math.log(numObjs / numObjsWithWord)
     return value
@@ -229,19 +244,12 @@ if __name__ == '__main__':
                 tfidfFile = open(directory + direct + "/tfidf_vectors_" + filename[:-8] + ".txt", "w")
                 gestureFile = directory + direct + "/" + filename
 
-                tempWordList = getWordsFromFile(gestureFile)
-                allWordsInGesture = []
-                for sensorWords in tempWordList:
-                    sensorWords = sensorWords.replace("]", "")
-                    sensorWords = sensorWords.replace("'", "")
-                    wrd = sensorWords.split(", ")
-                    allWordsInGesture.append(wrd)
-
+                allWordsInGesture = getWordsFromFile(gestureFile)
                 uniqueWordsInGesture = getUniqueWordsInGesture(allWordsInGesture)
 
                 for word_tuple in uniqueWordsInGesture:
-                    tfValue = calcTfValue(word_tuple[2], allWordsInGesture)
-                    idfValue = calcIdfValue(word_tuple[2], allWordsInGesture)
+                    tfValue = calcTfValue(word_tuple, allWordsInGesture)
+                    idfValue = calcIdfValue(word_tuple, direct)
                     tf_idf_value = tfValue * idfValue
                     tfFile.write(str(word_tuple) + " - " + str(tfValue) + "\n")
                     tfidfFile.write(str(word_tuple) + " - " + str(tf_idf_value) + "\n")
