@@ -54,12 +54,12 @@ def determineBands():
 
 
 def quantize(values, bandList):
-    quantized = []
+    quantized = ""
     for i in range(len(values)):
         bound = -1
         for band in bandList:
             if band >= values[i] > bound:
-                quantized.append(bandList.index(band) + 1)
+                quantized += str(bandList.index(band) + 1)
                 break
             else:
                 bound = band
@@ -78,8 +78,8 @@ def getWords():
 
 def addToUniqueDict(word_tuple):
     inList = False
-    for wrd in unique_dict:
-        if wrd == word_tuple:
+    for word in unique_dict:
+        if word == word_tuple:
             inList = True
             break
     if not inList:
@@ -96,16 +96,61 @@ def calcAvgQuanAmp():
         i += s
 
     for word in normWord:
-        avgAmp = sum(word)/len(word)
+        avgAmp = sum(word) / len(word)
         avgQuanAmpList.append(avgAmp)
 
     return avgQuanAmpList
 
 
+def getWordsFromFile(file):
+    with open(file, "r") as f:
+        words = []
+        for line in f:
+            line = line.strip()
+            row = line.split(" - [")  # list of all words as they occur in the file
+            if len(row) > 1:
+                words.append(row[1])
+        f.close()
+    return words
+
+
+def getUniqueWordsInGesture(allWordsInGesture):
+    uniqueWords = []
+    for i in range(len(allWordsInGesture)):  # i is each sensor in the gesture
+        for word in allWordsInGesture[i]:
+            uniqueWord = (direct, i+1, word)
+            if uniqueWord not in uniqueWords:
+                uniqueWords.append(uniqueWord)
+    return uniqueWords
+
+
+def calcTfValue(word, allWordsInFile):
+    totalWords = len(allWordsInFile[0]) * 20
+    num_occurs = 0
+    for sensor in allWordsInFile:
+        for wrd in sensor:
+            if wrd == word:
+                num_occurs += 1
+    value = num_occurs / totalWords
+    return value
+
+
+def calcIdfValue(word, allWordsInFile):
+    numObjs = len(allWordsInFile)
+    numObjsWithWord = 0
+
+    for sensor in allWordsInFile:
+        if word in sensor:
+            numObjsWithWord += 1
+
+    value = math.log(numObjs / numObjsWithWord)
+    return value
+
+
 if __name__ == '__main__':
     # GLOBAL VARIABLES:
     unique_dict = []  # stores list of all unique words found
-    gesture_dict = [] # stores list of all words found across all files
+    gesture_dict = []  # stores list of all words found across all files
 
     # TASK 0
     # TASK 0A
@@ -175,4 +220,30 @@ if __name__ == '__main__':
         # The dictionary of the words consists of <componentName, sensorID, winQ>
 
     # TASK 0B
+    for direct in os.listdir(directory):
+        # for each gesture file in W,X,Y,Z:
+        # create vector .txt files with tf and tf-idf values
+        for filename in os.listdir(directory + direct):
+            if filename.endswith(".wrd"):
+                tfFile = open(directory + direct + "/tf_vectors_" + filename[:-8] + ".txt", "w")
+                tfidfFile = open(directory + direct + "/tfidf_vectors_" + filename[:-8] + ".txt", "w")
+                gestureFile = directory + direct + "/" + filename
+
+                tempWordList = getWordsFromFile(gestureFile)
+                allWordsInGesture = []
+                for sensorWords in tempWordList:
+                    sensorWords = sensorWords.replace("]", "")
+                    sensorWords = sensorWords.replace("'", "")
+                    wrd = sensorWords.split(", ")
+                    allWordsInGesture.append(wrd)
+
+                uniqueWordsInGesture = getUniqueWordsInGesture(allWordsInGesture)
+
+                for word_tuple in uniqueWordsInGesture:
+                    tfValue = calcTfValue(word_tuple[2], allWordsInGesture)
+                    idfValue = calcIdfValue(word_tuple[2], allWordsInGesture)
+                    tf_idf_value = tfValue * idfValue
+                    tfFile.write(str(word_tuple) + " - " + str(tfValue) + "\n")
+                    tfidfFile.write(str(word_tuple) + " - " + str(tf_idf_value) + "\n")
+    # End of TASK1
 
