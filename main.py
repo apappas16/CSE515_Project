@@ -134,27 +134,33 @@ def getUniqueWordsInGesture(allWordsInGesture):
     return uniqueWords
 
 
-def calcTfValue(wordTuple, allWordsInFile):
-    totalWords = len(allWordsInFile[0]) * 20
+def calcTfValue(wordTuple):
+    totalWords = 0
+    sensorIndex = wordTuple[1]-1
     num_occurs = 0
-    for sensor in range(len(allWordsInFile)):
-        for wrd in allWordsInFile[sensor]:
-            if wrd == wordTuple[2] and (sensor+1) == wordTuple[1]:
-                num_occurs += 1
+    component = wordTuple[0]
+
+    for file in os.listdir(directory + component):
+        if file.endswith(".wrd"):
+            file = directory + component + "/" + file
+            gestFileWords = getWordsFromFile(file)
+            num_occurs += gestFileWords[sensorIndex].count(wordTuple[2])
+            totalWords += len(gestFileWords[sensorIndex])
     value = num_occurs / totalWords
     return value
 
 
-def calcIdfValue(wordTuple, direct):
+def calcIdfValue(wordTuple):
     numObjs = 60
     numObjsWithWord = 1
-    sensorId = wordTuple[1]
+    sensorIndex = wordTuple[1]-1
+    component = wordTuple[0]
 
-    for file in os.listdir(directory + direct):
+    for file in os.listdir(directory + component):
         if file != gestureFile and file.endswith(".wrd"):
-            file = directory + direct + "/" + file
+            file = directory + component + "/" + file
             gestFileWords = getWordsFromFile(file)
-            if word_tuple[2] in gestFileWords[sensorId-1]:
+            if word_tuple[2] in gestFileWords[sensorIndex]:
                 numObjsWithWord += 1
                 break
 
@@ -186,52 +192,52 @@ if __name__ == '__main__':
                 bands = determineBands()
 
                 # generate .wrd file
-                wrdFile = open(str(directory) + str(direct) + "/" + str(filename) + ".wrd", "w")
+                with open(str(directory) + str(direct) + "/" + str(filename) + ".wrd", "w") as wrdFile:
 
-                sensor_id = 1
-                csvFile = open(str(directory) + str(direct) + "/" + filename, "r")
-                reader = csv.reader(csvFile, delimiter=',')
-                # for each sensor sj in file
-                for sensor in reader:
-                    # output component ID, c in output file
-                    wrdFile.write(str(direct) + ", ")
+                    sensor_id = 1
+                    csvFile = open(str(directory) + str(direct) + "/" + filename, "r")
+                    reader = csv.reader(csvFile, delimiter=',')
+                    # for each sensor sj in file
+                    for sensor in reader:
+                        # output component ID, c in output file
+                        wrdFile.write(str(direct) + ", ")
 
-                    # write sensorID to wrd file
-                    wrdFile.write(str(sensor_id) + ", ")
+                        # write sensorID to wrd file
+                        wrdFile.write(str(sensor_id) + ", ")
 
-                    # compute and output average amplitude, avgij of the values
-                    sensorVals = list(sensor)
-                    sensorVals = [float(i) for i in sensorVals]
-                    sensorAvg = calcAvgSensorValue(sensorVals)
-                    wrdFile.write(str(sensorAvg) + ", ")
+                        # compute and output average amplitude, avgij of the values
+                        sensorVals = list(sensor)
+                        sensorVals = [float(i) for i in sensorVals]
+                        sensorAvg = calcAvgSensorValue(sensorVals)
+                        wrdFile.write(str(sensorAvg) + ", ")
 
-                    # compute and output standard deviations stdij of the values
-                    stdDev = calcStdDev(sensorVals, sensorAvg)
-                    wrdFile.write(str(stdDev) + ", ")
+                        # compute and output standard deviations stdij of the values
+                        stdDev = calcStdDev(sensorVals, sensorAvg)
+                        wrdFile.write(str(stdDev) + ", ")
 
-                    # normalize entries between -1 and 1
-                    normSensorVals = normalize(sensorVals)
+                        # normalize entries between -1 and 1
+                        normSensorVals = normalize(sensorVals)
 
-                    # quantizes entries into 2r levels as in phase 1
-                    quantizedSensor = quantize(normSensorVals, bands)
+                        # quantizes entries into 2r levels as in phase 1
+                        quantizedSensor = quantize(normSensorVals, bands)
 
-                    # moves a w-length window on time series (by shifting it s units at a time), and at position h
-                    sensorWords = getWords()
+                        # moves a w-length window on time series (by shifting it s units at a time), and at position h
+                        sensorWords = getWords()
 
-                    # computes and outputs in file average quantized amplitude avgQijh for window h of sensor sj
-                    avgQuanAmp = calcAvgQuanAmp()
-                    wrdFile.write(str(avgQuanAmp) + ", " + " - ")
+                        # computes and outputs in file average quantized amplitude avgQijh for window h of sensor sj
+                        avgQuanAmp = calcAvgQuanAmp()
+                        wrdFile.write(str(avgQuanAmp) + ", " + " - ")
 
-                    # computes and outputs symbolic quantized window descriptor winQijh for the window h of sensor sj
-                    wrdFile.write(str(sensorWords) + "\n")
+                        # outputs symbolic quantized window descriptor winQijh for the window h of sensor sj
+                        wrdFile.write(str(sensorWords) + "\n")
 
-                    # add dictionary of each window to gestureDict list
-                    for window in sensorWords:
-                        wordDict = (direct, sensor_id, window)
-                        gesture_dict.append(wordDict)
-                        addToUniqueDict(wordDict)
+                        # add dictionary of each window to gestureDict list
+                        for window in sensorWords:
+                            wordDict = (direct, sensor_id, window)
+                            gesture_dict.append(wordDict)
+                            addToUniqueDict(wordDict)
 
-                    sensor_id += 1
+                        sensor_id += 1
         # The dictionary of the words consists of <componentName, sensorID, winQ>
 
     # TASK 0B
@@ -248,8 +254,8 @@ if __name__ == '__main__':
                 uniqueWordsInGesture = getUniqueWordsInGesture(allWordsInGesture)
 
                 for word_tuple in uniqueWordsInGesture:
-                    tfValue = calcTfValue(word_tuple, allWordsInGesture)
-                    idfValue = calcIdfValue(word_tuple, direct)
+                    tfValue = calcTfValue(word_tuple)
+                    idfValue = calcIdfValue(word_tuple)
                     tf_idf_value = tfValue * idfValue
                     tfFile.write(str(word_tuple) + " - " + str(tfValue) + "\n")
                     tfidfFile.write(str(word_tuple) + " - " + str(tf_idf_value) + "\n")
