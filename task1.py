@@ -22,10 +22,10 @@ def LDA(k):
     return topK
 
 
-def makeMat(gestfiles, axis):
+def makeMat(vectModel, axis):
         
     #read files
-    if gestfiles == "tf":
+    if vectModel == "tf":
         Xmat = []
         for file in glob.glob(directory + axis + "/tf_vectors_*.txt"):
             #read tf file
@@ -65,58 +65,49 @@ def makeMat(gestfiles, axis):
             for x in gestWords:
                 xint = int(x)
             
-                if wordMat[xint - startI] == 0:
-                    wordMat[xint - startI] = float(tfVals[index])
-            
+                #if wordMat[xint - startI] == 0:
+                wordMat[xint - startI] = wordMat[xint - startI] + float(tfVals[index])
                 index = index + 1
                 
+            
+            for iterate in range(0, len(wordMat)):
+                wordMat[iterate] = wordMat[iterate] / 20
+
             Xmat.append(wordMat)
             f.close()
            
         return Xmat
     
-    elif gestfiles == "idf":
+    elif vectModel == "idf":
         return wordMat
     
-def task1(gestfiles, vectModel, k):
+def task1(gestfiles, vectModel, useOp, k):
     
-    if vectModel == "PCA":
+    if useOp == "PCA":
         #PCA for X axis
-        wordMat = makeMat(gestfiles, "X")
+        wordMat = makeMat(vectModel, gestfiles)
         topk = PCAsetup(wordMat, k)
-        print("\nPCA for X gesture files:\n")
+        print("\nPCA for " + gestfiles + " gesture files:\n")
         print(topk)
         
-        #PCA for Y axis
-        wordMat = makeMat(gestfiles, "Y")
-        topk = PCAsetup(wordMat, k)
-        print("\nPCA for Y gesture files:\n")
-        print(topk)
-        
-        #PCA for Z axis
-        wordMat = makeMat(gestfiles, "Z")
-        topk = PCAsetup(wordMat, k)
-        print("\nPCA for Z gesture files:\n")
-        print(topk)
-        
-        #PCA for W axis
-        wordMat = makeMat(gestfiles, "W")
-        topk = PCAsetup(wordMat, k)
-        print("\nPCA for W gesture files:\n")
-        print(topk)
-        
-    elif vectModel == "SVD":
+    elif useOp == "SVD":
         topk = SVD(k)
-    elif vectModel == "NMF":
+    elif useOp == "NMF":
         topk = NMF(k)
-    elif vectModel == "LDA":
+    elif useOp == "LDA":
         topk = LDA(k)
 
 
-
-gestfiles = input("Enter the gesture files: ")
+gestfiles = input("Enter the folder that you want analyzed: ")
 vectModel = input("Enter the vector model: ")
 k = input("Enter k: ")
+useOp = input("Enter the analysis you would like to use: ")
 k = int(k)
-task1(gestfiles, vectModel, k)
+task1(gestfiles, vectModel, useOp, k)
+
+#sample output: 
+#Enter the folder that you want analyzed: X
+#Enter the vector model: tf
+#Enter k: 10
+#Enter the analysis you would like to use: PCA
 
