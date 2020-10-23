@@ -3,6 +3,18 @@ import glob
 import pandas as pd
 from sklearn.decomposition import PCA
 
+#unnecessary lines if you are using anaconda or another 
+print("Please enter the following inputs as the same values you used for task 0: ")
+directory = input("Enter the data directory path: ")
+w = input("Enter the window length: ")
+s = input("Enter the shift length: ")
+r = input("Enter the resolution: ")
+
+w = int(w)
+s = int(s)
+r = int(r)
+#end of non-anaconda lines
+
 #returns the top-k topics 
 def PCAsetup(wordMat, k):
     #calculate PCA
