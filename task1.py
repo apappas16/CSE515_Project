@@ -6,7 +6,7 @@ import pickle
 from sklearn.decomposition import PCA
 from sklearn.decomposition import TruncatedSVD
 from sklearn.decomposition import NMF
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+from sklearn.decomposition import LatentDirichletAllocation
 
 #unnecessary lines if you are using anaconda or another 
 print("Please enter the following inputs as the same values you used for task 0: ")
@@ -59,7 +59,7 @@ def LDAsetup(wordMat, k):
     
     labels = []
     for i in range(0, len(wordMat)):
-        labels.append(i % 3 )
+        labels.append(i % 2 )
     print(np.shape(labels))
     
     print(np.shape(wordMat))
@@ -68,7 +68,7 @@ def LDAsetup(wordMat, k):
     print(np.unique(labels))
     
     lda = LDA(k)
-    ld = lda.fit_transform(wordMat, labels)
+    ld = lda.fit_transform(wordMat)
     topk = pd.DataFrame(data = ld)
     
     return topK
@@ -125,6 +125,7 @@ def makeMat(vectModel, axis):
             for iterate in range(0, len(wordMat)):
                 wordMat[iterate] = wordMat[iterate] / 20
 
+            
             Xmat.append(wordMat)
             f.close()
            
@@ -178,6 +179,7 @@ def makeMat(vectModel, axis):
             for iterate in range(0, len(wordMat)):
                 wordMat[iterate] = wordMat[iterate] / 20
 
+            
             Xmat.append(wordMat)
             f.close()
            
@@ -204,7 +206,7 @@ def task1(gestfiles, vectModel, useOp, k):
         print(topk)
         
         original_df = pd.DataFrame(topk)
-        original_df.to_pickle("./PCA_" + gestfiles + ".pkl")
+        original_df.to_pickle("./PCA_" + gestfiles + "_" + vectModel + ".pkl")
         
         #dictofComponents = createdictofComponents(topk, k)
         
@@ -215,7 +217,7 @@ def task1(gestfiles, vectModel, useOp, k):
         print(topk)
         
         original_df = pd.DataFrame(topk)
-        original_df.to_pickle("./SVD_" + gestfiles + ".pkl")
+        original_df.to_pickle("./SVD_" + gestfiles + "_" + vectModel + ".pkl")
         
     elif useOp == "NMF":
         wordMat = makeMat(vectModel, gestfiles)
@@ -224,7 +226,7 @@ def task1(gestfiles, vectModel, useOp, k):
         print(topk)
         
         original_df = pd.DataFrame(topk)
-        original_df.to_pickle("./NMF_" + gestfiles + ".pkl")
+        original_df.to_pickle("./NMF_" + gestfiles + "_" + vectModel + ".pkl")
         
     elif useOp == "LDA":
         wordMat = makeMat(vectModel, gestfiles)
@@ -233,7 +235,7 @@ def task1(gestfiles, vectModel, useOp, k):
         print(topk)
         
         original_df = pd.DataFrame(topk)
-        original_df.to_pickle("./LDA_" + gestfiles + ".pkl")
+        original_df.to_pickle("./LDA_" + gestfiles + "_" + vectModel + ".pkl")
 
 
 gestfiles = input("Enter the folder that you want analyzed: ")
