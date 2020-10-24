@@ -45,31 +45,9 @@ def NMFsetup(wordMat, k):
 
 def LDAsetup(wordMat, k):
     #calculate LDA
-    """startI = "1"
-    for y in range(1, w):
-        startI = startI + "1"
-    startI = int(startI)
-    
-    labels = []
-    numWords = startI * (2*r) - startI
-    for i in range(0, numWords + 1):
-        labels.append(str(startI + i))
-    #print(labels)
-    """
-    
-    labels = []
-    for i in range(0, len(wordMat)):
-        labels.append(i % 2 )
-    print(np.shape(labels))
-    
-    print(np.shape(wordMat))
-    #labels = np.transpose(wordMat)[1][:]
-    #print(np.transpose(labels))
-    print(np.unique(labels))
-    
     lda = LDA(k)
     ld = lda.fit_transform(wordMat)
-    topk = pd.DataFrame(data = ld)
+    topK = pd.DataFrame(data = ld)
     
     return topK
 
