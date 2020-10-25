@@ -195,7 +195,7 @@ if user_option == 1 :
         cost.append(similarity)
     
 elif user_option == 2 :
-    PC_path = ["PCA", axis.upper(), vector_model.upper()]
+    PC_path = ["PCA", axis, vector_model]
     PC_path = "_".join(PC_path)
     pca = pd.read_pickle(PC_path + ".pkl")
     num = len(pca[0])
@@ -208,7 +208,7 @@ elif user_option == 2 :
         cost.append(similarity)
 
 elif user_option == 3 :                   
-    PC_path = ["SVD", axis.upper(), vector_model.upper()]
+    PC_path = ["SVD", axis, vector_model]
     PC_path = "_".join(PC_path)
     svd = pd.read_pickle(PC_path + ".pkl")                                      
     num = len(svd[0])                                                           
@@ -222,7 +222,7 @@ elif user_option == 3 :
         cost.append(similarity)                 
     
 elif user_option == 4 :                                                         
-    PC_path = ["NMF", axis.upper(), vector_model.upper()]
+    PC_path = ["NMF", axis, vector_model]
     PC_path = "_".join(PC_path)
     nmf = pd.read_pickle(PC_path + ".pkl")
     num = len(nmf[0])                                                           
@@ -236,7 +236,7 @@ elif user_option == 4 :
         cost.append(similarity)                             
         
 elif user_option == 5 :                                                         
-    PC_path = ["LDA", axis.upper(), vector_model.upper()]
+    PC_path = ["LDA", axis, vector_model]
     PC_path = "_".join(PC_path)
     lda = pd.read_pickle(PC_path + ".pkl")
     num = len(lda[0])                                                           
