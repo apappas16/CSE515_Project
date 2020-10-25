@@ -6,7 +6,7 @@ import pickle
 from sklearn.decomposition import PCA
 from sklearn.decomposition import TruncatedSVD
 from sklearn.decomposition import NMF
-from sklearn.decomposition import LatentDirichletAllocation
+from sklearn.decomposition import LatentDirichletAllocation as LDA
 
 #unnecessary lines if you are using anaconda or another 
 print("Please enter the following inputs as the same values you used for task 0: ")
