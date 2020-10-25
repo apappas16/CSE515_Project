@@ -7,6 +7,7 @@ from scipy import stats
 from scipy import spatial
 import pandas as pd
 import numpy as np
+from math import log2
 
 
 def dot_similarity(gesture1, gesture2):                  
@@ -28,6 +29,9 @@ def cos_similarity(vec1, vec2):
     similarity = 1- spatial.distance.cosine(x, y)                             
                                                                             
     return similarity                             
+
+def KL_div_similarity(p, q):
+    return sum(p[i] * log2(p[i]/q[i]) for i in range(len(p)))
 
 def edit_distance(sensor1, sensor2, m, n):
     # Create a table to store results of subproblems 
@@ -250,7 +254,7 @@ elif user_option == 5 :
     
     cost=[]                                                                     
     for idx in range(num) :                                                     
-        similarity = pears_similarity(key_vec, lda[idx])                            
+        similarity = KL_div_similarity(key_vec, lda[idx])                            
         cost.append(similarity)                                  
     cost_top_K = sorted(cost, reverse=True)[1:top_K+1]                                        
 
