@@ -193,6 +193,7 @@ if user_option == 1 :
     for gesture in gestures :
         similarity = dot_similarity(key_gesture, gesture)
         cost.append(similarity)
+    cost_top_K = sorted(cost, reverse=True)[1:top_K+1]                                        
     
 elif user_option == 2 :
     PC_path = ["PCA", axis, vector_model]
@@ -206,6 +207,7 @@ elif user_option == 2 :
     for idx in range(num) :
         similarity = pears_similarity(key_vec, pca[idx])
         cost.append(similarity)
+    cost_top_K = sorted(cost, reverse=True)[1:top_K+1]                                        
 
 elif user_option == 3 :                   
     PC_path = ["SVD", axis, vector_model]
@@ -220,6 +222,7 @@ elif user_option == 3 :
     for idx in range(num) :                                                     
         similarity = cos_similarity(key_vec, svd[idx])                            
         cost.append(similarity)                 
+    cost_top_K = sorted(cost, reverse=True)[1:top_K+1]                                        
     
 elif user_option == 4 :                                                         
     PC_path = ["NMF", axis, vector_model]
@@ -233,8 +236,9 @@ elif user_option == 4 :
     cost=[]                                                                     
     for idx in range(num) :                                                     
         similarity = cos_similarity(key_vec, nmf[idx])                            
-        cost.append(similarity)                             
-        
+        cost.append(similarity)           
+    cost_top_K = sorted(cost, reverse=True)[1:top_K+1]                                        
+                  
 elif user_option == 5 :                                                         
     PC_path = ["LDA", axis, vector_model]
     PC_path = "_".join(PC_path)
@@ -248,6 +252,7 @@ elif user_option == 5 :
     for idx in range(num) :                                                     
         similarity = pears_similarity(key_vec, lda[idx])                            
         cost.append(similarity)                                  
+    cost_top_K = sorted(cost, reverse=True)[1:top_K+1]                                        
 
 elif user_option == 6 :
     path = directory+"/"+axis
@@ -260,6 +265,7 @@ elif user_option == 6 :
             n = len(sensor)
             m = len(key_gesture[j])
             cost[i] += edit_distance(key_gesture[j], sensor, m, n)
+    cost_top_K = sorted(cost)[1:top_K+1]                                        
 
 elif user_option == 7 :
     path = directory+"/"+axis
@@ -272,11 +278,11 @@ elif user_option == 7 :
             n = len(sensor)                                                     
             m = len(key_gesture[j])                                             
             cost[i] += dynamic_time_warping(key_gesture[j], sensor, m, n)    
+    cost_top_K = sorted(cost)[1:top_K+1]                                        
 else:
     print("ERROR : No such user option in this program")
     
                                                            
 print("Most similar (gesture, score) ")              
-cost_top_K = sorted(cost)[1:top_K+1]                                        
 for k in cost_top_K :                                                       
     print((cost.index(k), k))       
