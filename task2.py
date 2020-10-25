@@ -1,29 +1,33 @@
 import os
 from sklearn.metrics.pairwise import cosine_similarity                          
 from math import log
-#import heapq
 import re
 import pandas as pd
 from scipy import stats
+from scipy import spatial
+import pandas as pd
+import numpy as np
 
-def pearson_coef(vec1, vec2):
-    data = {'list1':vec1, 'list2':vec2}
-    df = pd.DataFrame(data, columns=['list1','list2'])
-    pearson_coef, p_value = stats.pearsonr(df["list1"], df["list2"])
-    #pearson_coef, p_value = stats.pearsonr(vec1, vec2)
 
+def dot_similarity(gesture1, gesture2):                  
+    x = np.array(gesture1)
+    y = np.array(gesture2)
+    if len(x) > len(y):
+        y = np.pad(y, (0, len(x) - len(y)))
+    else:
+        x = np.pad(x, (0, len(y) - len(x)))
+    return np.dot(x, y)
+
+def pears_similarity(vec1, vec2):
+    pearson_coef, p_value = stats.pearsonr(vec1, vec2)
     return pearson_coef
-
-def dot_similarity(vec1, vec2):                            
-    return sum([x*y for x,y in zip(vec1,vec2)])
-
-def cos_similarity(tfidfs , key_idx, top_K):                            
-    x = np.array(tfidfs[key_idx]).reshape(1,-1)                       
-    y = np.array(tfidfs)                                                    
-    similarities =  cosine_similarity(x, y)                                          
-    related_docs_indices = similarities[0].argsort()[:-(top_K+1):-1]   
+    
+def cos_similarity(vec1, vec2):                            
+    x = np.array(vec1)
+    y = np.array(vec2)                                                    
+    similarity = 1- spatial.distance.cosine(x, y)                             
                                                                             
-    return related_docs_indices                             
+    return similarity                             
 
 def edit_distance(sensor1, sensor2, m, n):
     # Create a table to store results of subproblems 
@@ -56,6 +60,7 @@ def edit_distance(sensor1, sensor2, m, n):
                                    dp[i-1][j-1])    # Replace 
   
     return dp[m][n] 
+    
 def dynamic_time_warping(sensor1, sensor2, m, n):
     dp = [[0 for x in range(n+1)] for x in range(m+1)] 
     
@@ -76,95 +81,202 @@ def dynamic_time_warping(sensor1, sensor2, m, n):
             
     return dp[m][n] 
 
-# This code is contributed by Bhavya Jain 
-directory = "./Data/Z/"
-gestures = []
-print("Enter 6(ED) or 7(DTW) : ")
-user_option = int(input())
-for filename in os.listdir(directory):
-    #if not filename.startswith("tf_") or not filename.endswith(".txt") :
-    #if not filename.startswith("tfidf_") or not filename.endswith(".txt") :
-    if not filename.endswith(".wrd") :
-        continue
-    path = [directory, filename]
-    path = "/".join(path)
-    with open(path, "r") as w:
-        gesture = w.readlines()
-
-    matrix=[]
-
-    for sensor in gesture :
-        #tfidf file index loading
-        #sensor_id = int(sensor.split("-")[0].split(",")[1])
-        #tfidf = float(sensor.split("-")[1].strip())
-        #sensor_id = int(sensor.split(",")[1])
-        if user_option == 6:
-            window = [re.findall(r'\d+',word)[0] for word in sensor.split(" - ")[1].split(",")]
-        if user_option == 7:
-            window = [float(word) for word in sensor.split(" - ")[0].split("[")[1].replace("],","").split(",")]
-        matrix.append(window)
+def tfidf_loader(directory):
+    gestures = []
+    for filename in os.listdir(directory):
+        if not filename.startswith("tfidf_") or not filename.endswith(".txt") :
+            continue
             
-    gestures.append(matrix)
+        path = directory+"/"+filename
+        with open(path, "r") as w:
+            gesture = w.readlines()
 
+        matrix=[]
+
+        for sensor in gesture :
+            tfidf = float(sensor.split("-")[1].strip())
+            matrix.append(tfidf)
+                
+        gestures.append(matrix)
+        
+    return gestures
+    
+    
+def tf_loader(directory):
+    gestures = []
+    for filename in os.listdir(directory):
+        if not filename.startswith("tf_") or not filename.endswith(".txt") :
+            continue
+            
+        path = directory+"/"+filename
+        with open(path, "r") as w:
+            gesture = w.readlines()
+
+        matrix=[]
+
+        for sensor in gesture :
+            tf = float(sensor.split("-")[1].strip())   
+            matrix.append(tf)
+        gestures.append(matrix)
+        
+    return gestures
+    
+def symbol_loader(directory):
+    gestures = []
+    for filename in os.listdir(directory):
+        if not filename.endswith(".wrd") :
+            continue
+        path = directory+"/"+filename
+        with open(path, "r") as w:
+            gesture = w.readlines()
+
+        matrix=[]
+
+        for sensor in gesture :
+            sym_quant_window = [re.findall(r'\d+',word)[0] for word in sensor.split(" - ")[1].split(",")] 
+            matrix.append(sym_quant_window)
+                
+        gestures.append(matrix)
+        
+    return gestures
+
+def amplitude_loader(directory):
+    gestures = []
+    for filename in os.listdir(directory):
+        if not filename.endswith(".wrd") :
+            continue
+        path = directory+"/"+filename
+        with open(path, "r") as w:
+            gesture = w.readlines()
+
+        matrix=[]
+
+        for sensor in gesture :
+            avg_quant_ampitude = [float(word) for word in sensor.split(" - ")[0].split("[")[1].replace("],","").split(",")]
+            matrix.append(avg_quant_ampitude)
+                
+        gestures.append(matrix)
+        
+    return gestures
+
+###### GET Input from users######
+print("Enter gesture file(e.g Data/Z/1.csv) :")
+print("* WARNING : Please make .pkl in TASK 1 before you use principal component")
+gesture_path = input()
+
+directory = gesture_path.split("/")[0]
+axis = gesture_path.split("/")[1]
+filename = gesture_path.split("/")[2]
+key_idx = int(re.findall(r'\d+', filename)[0])
+
+print("Enter vector model (tf, tfidf):")
+vector_model = input()
+
+print("Enter user options (1 ~ 7)")
+print("* HINT : 1 = Dot similarity, 2 = PCA, 3 = SVD, 4 = NMF, 5 = LDA, 6 = Edit Distance, 7 = DTW")
+user_option = int(input())  
+
+#Retrieve only top 10 gestures with high similarity
+top_K = 10
+
+#Calculate similarity(cost) based on User options
 if user_option == 1 :
-    print("Enter gesture name to compare : ")                                   
-    key_idx = int(input())                                                      
-    print("Enter number of gesture to retrieve : ")                             
-    top_K = int(input())                                                        
-    tfidfs=None
-    gesture_id = dot_similarity(tfidfs, key_idx, top_K)
-    print("Most similar gestures (Dot similarity) :",gesture_id[1:top_K])
+    path = directory+"/"+axis
+    if vector_model == "tf":
+        gestures = tf_loader(path)
+
+    elif vector_model == "tfidf":
+        gestures = tfidf_loader(path)
+        
+    cost=[]
+    key_gesture = gestures[key_idx]
+    for gesture in gestures :
+        similarity = dot_similarity(key_gesture, gesture)
+        cost.append(similarity)
+    
 elif user_option == 2 :
-    print("PCA")
-    similarity = pearson_coef([],[])
+    PC_path = ["PCA", axis, vector_model]
+    PC_path = "_".join(PC_path)
+    pca = pd.read_pickle(PC_path + ".pkl")
+    num = len(pca[0])
+
+    pca = pca.T
+    key_vec = pca[key_idx]
+    cost=[]
+    for idx in range(num) :
+        similarity = pears_similarity(key_vec, pca[idx])
+        cost.append(similarity)
+
+elif user_option == 3 :                   
+    PC_path = ["SVD", axis, vector_model]
+    PC_path = "_".join(PC_path)
+    svd = pd.read_pickle(PC_path + ".pkl")                                      
+    num = len(svd[0])                                                           
+                                                                                
+    svd = svd.T                                                                 
+    key_vec = svd[key_idx]      
+    
+    cost=[]                                                                     
+    for idx in range(num) :                                                     
+        similarity = cos_similarity(key_vec, svd[idx])                            
+        cost.append(similarity)                 
+    
+elif user_option == 4 :                                                         
+    PC_path = ["NMF", axis, vector_model]
+    PC_path = "_".join(PC_path)
+    nmf = pd.read_pickle(PC_path + ".pkl")
+    num = len(nmf[0])                                                           
+                                                                                
+    nmf = nmf.T                                                                 
+    key_vec = nmf[key_idx]    
+    
+    cost=[]                                                                     
+    for idx in range(num) :                                                     
+        similarity = cos_similarity(key_vec, nmf[idx])                            
+        cost.append(similarity)                             
+        
+elif user_option == 5 :                                                         
+    PC_path = ["LDA", axis, vector_model]
+    PC_path = "_".join(PC_path)
+    lda = pd.read_pickle(PC_path + ".pkl")
+    num = len(lda[0])                                                           
+                                                                                
+    lda = lda.T                                                                 
+    key_vec = lda[key_idx]    
+    
+    cost=[]                                                                     
+    for idx in range(num) :                                                     
+        similarity = pears_similarity(key_vec, lda[idx])                            
+        cost.append(similarity)                                  
 
 elif user_option == 6 :
-    print("Enter gesture name to compare : ")
-    key_idx = int(input())
-    print("Enter number of gesture to retrieve : ")
-    top_K = int(input())
+    path = directory+"/"+axis
+    gestures = symbol_loader(path)
     key_gesture = gestures[key_idx]
-
-    #compare every sensor(which contains quntized_window_vector) with gesture file in DB
+    
     cost=[0]*len(gestures)
     for i, gesture in enumerate(gestures) :
-        if gesture == key_gesture :
-            continue
         for j, sensor in enumerate(gesture) :
             n = len(sensor)
             m = len(key_gesture[j])
             cost[i] += edit_distance(key_gesture[j], sensor, m, n)
-    #gesture_id = [cost.index(max_cost) for max_cost in heapq.nlargest(top_K, cost)]
-    #cost_score = heapq.nlargest(top_K, cost)
-    cost_rank = cost.sort()[:top_K]
-    gesture_id = cost.index(cost_rank)
-    pairs = zip(gesture_id, cost_score)
-    print("Most similar (gesture, score) in Edit distance :")
-    for pair in pairs :
-        print(pair)
 
 elif user_option == 7 :
-    print("Enter gesture name to compare : ")                                   
-    key_idx = int(input())                                                      
+    path = directory+"/"+axis
+    gestures = amplitude_loader(path)
     key_gesture = gestures[key_idx]
-
-    print("Enter number of gesture to retrieve : ")                             
-    top_K = int(input())                                                        
-
+    
     cost=[0]*len(gestures)
     for i, gesture in enumerate(gestures) :                                     
-        if gesture == key_gesture :                                             
-            continue                                                            
         for j, sensor in enumerate(gesture) :                                   
             n = len(sensor)                                                     
             m = len(key_gesture[j])                                             
             cost[i] += dynamic_time_warping(key_gesture[j], sensor, m, n)    
-    #gesture_id = [cost.index(max_cost) for max_cost in heapq.nlargest(top_K, cost)]
-    cost_rank = cost.sort()[:top_K]
-    gesture_id = cost.index(cost_rank)
-    pairs = zip(gesture_id, cost_rank)
-    print("Most similar (gesture, score) in Dynamic Time Warping :")
-    for pair in pairs :
-        print(pair)
 else:
-    print("No such option (Please enter integer). Program ended")
+    print("ERROR : No such user option in this program")
+    
+                                                           
+print("Most similar (gesture, score) ")              
+cost_top_K = sorted(cost)[1:top_K+1]                                        
+for k in cost_top_K :                                                       
+    print((cost.index(k), k))       
