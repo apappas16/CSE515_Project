@@ -9,8 +9,10 @@ from sklearn.datasets import make_moons
 Task 4a, 4b
 """
 def members(data):
+    # Finding the feature each gesture contributes to the most
     max_index = np.argmax(data, axis=0)
     member_dict = {}
+    # Making a dictionary with key=feature and value=list of gestures
     for i in range(len(max_index)):
         if max_index[i]+1 in member_dict:
             member_dict[max_index[i]+1].append("Gesture " + str(i + 1))
