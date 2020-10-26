@@ -164,15 +164,30 @@ def makeMat(vectModel, axis):
         return Xmat
     
 def createdictofComponents(topk, k):
-    
-    
-    print(topk[0][1])
+    #creates a matrix that contains tuples of the word and score
+    outputMat = []
+    outputMat = topk
     for i in range(0, k):
-        word = "w" + str(k)
+        word = "w" + str(i)
         for j in range(0, len(topk)):
-            topk[i][j] = (word, topk[j][i])
+            #print(topk[i][j])
+            outputMat[i][j] = (topk[i][j], word)
             
-    print(topk)
+    
+    #sorts the words acording to their scores
+    outputMat = np.transpose(outputMat)
+    outputMat = outputMat.apply(lambda x: x.sort_values(ascending = False).values)
+    outputMat = np.transpose(outputMat)
+    finalMat = outputMat
+    for i in range(0, k):
+        for j in range(0, len(outputMat)):
+            finalMat[i][j] = (outputMat[i][j][1], outputMat[i][j][0])
+            
+    file = open("./userOutput.txt", "w")
+    file.write(str(finalMat))
+    file.close()
+    return finalMat
+    
     
 def task1(gestfiles, vectModel, useOp, k):
     
@@ -181,39 +196,53 @@ def task1(gestfiles, vectModel, useOp, k):
         wordMat = makeMat(vectModel, gestfiles)
         topk = PCAsetup(wordMat, k)
         print("\nPCA for " + gestfiles + " gesture files:\n")
-        print(topk)
+        #print(topk)
         
         original_df = pd.DataFrame(topk)
         original_df.to_pickle("./PCA_" + gestfiles + "_" + vectModel + ".pkl")
         
-        #dictofComponents = createdictofComponents(topk, k)
+        dictofComponents = createdictofComponents(topk, k)
+        print(dictofComponents)
+        
         
     elif useOp == "SVD":
         wordMat = makeMat(vectModel, gestfiles)
         topk = SVDsetup(wordMat, k)
         print("\nSVD for " + gestfiles + " gesture files:\n")
-        print(topk)
+        #print(topk)
         
         original_df = pd.DataFrame(topk)
         original_df.to_pickle("./SVD_" + gestfiles + "_" + vectModel + ".pkl")
+        
+        dictofComponents = createdictofComponents(topk, k)
+        print(dictofComponents)
+        
         
     elif useOp == "NMF":
         wordMat = makeMat(vectModel, gestfiles)
         topk = NMFsetup(wordMat, k)
         print("\nNMF for " + gestfiles + " gesture files:\n")
-        print(topk)
+        #print(topk)
         
         original_df = pd.DataFrame(topk)
         original_df.to_pickle("./NMF_" + gestfiles + "_" + vectModel + ".pkl")
+        
+        dictofComponents = createdictofComponents(topk, k)
+        print(dictofComponents)
+
         
     elif useOp == "LDA":
         wordMat = makeMat(vectModel, gestfiles)
         topk = LDAsetup(wordMat, k)
         print("\nLDA for " + gestfiles + " gesture files:\n")
-        print(topk)
+        #print(topk)
         
         original_df = pd.DataFrame(topk)
         original_df.to_pickle("./LDA_" + gestfiles + "_" + vectModel + ".pkl")
+        
+        dictofComponents = createdictofComponents(topk, k)
+        print(dictofComponents)
+        
 
 
 gestfiles = input("Enter the folder that you want analyzed: ")
@@ -223,6 +252,9 @@ useOp = input("Enter the analysis you would like to use: ")
 k = int(k)
 task1(gestfiles, vectModel, useOp, k)
 
+#p = pickle.load( open( "LDA_W_tf.pkl", "rb" ) )
+#print("pickle")
+#print(p)
 
 #sample output: 
 #Enter the folder that you want analyzed: X
