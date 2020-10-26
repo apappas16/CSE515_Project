@@ -10,10 +10,10 @@ from sklearn.decomposition import LatentDirichletAllocation as LDA
 
 #unnecessary lines if you are using anaconda or another 
 print("Please enter the following inputs as the same values you used for task 0: ")
-directory = input("Enter the data directory path: ")
-w = input("Enter the window length: ")
-s = input("Enter the shift length: ")
-r = input("Enter the resolution: ")
+directory = input("Enter the data directory path (ex: Data/: ")
+w = input("Enter the window length (ex: 3): ")
+s = input("Enter the shift length (ex: 3): ")
+r = input("Enter the resolution (ex: 3): ")
 
 w = int(w)
 s = int(s)
@@ -245,10 +245,10 @@ def task1(gestfiles, vectModel, useOp, k):
         
 
 
-gestfiles = input("Enter the folder that you want analyzed: ")
-vectModel = input("Enter the vector model: ")
-k = input("Enter k: ")
-useOp = input("Enter the analysis you would like to use: ")
+gestfiles = input("Enter the folder that you want analyzed (ex: X): ")
+vectModel = input("Enter the vector model (ex: tf): ")
+k = input("Enter k (ex: 4): ")
+useOp = input("Enter the analysis you would like to use (ex: PCA): ")
 k = int(k)
 task1(gestfiles, vectModel, useOp, k)
 
