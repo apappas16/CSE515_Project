@@ -205,6 +205,7 @@ for filename in os.listdir(directory):
         outname="PCA"
         PC_path = ["PCA", axis, vector_model]
         PC_path = "_".join(PC_path)
+
         pca = pd.read_pickle(PC_path + ".pkl")
         num = len(pca[0])
         pca = pca.T
@@ -262,7 +263,7 @@ for filename in os.listdir(directory):
         gest_gest_sim[key_idx-1] = cost                                         
     elif user_option == 6 :
         outname="ED"
-        path = directory+"/"+axis
+        path = directory
         gestures = symbol_loader(path)
         key_gesture = gestures[key_idx-1]
         
@@ -276,7 +277,7 @@ for filename in os.listdir(directory):
 
     elif user_option == 7 :
         outname="DTW"
-        path = directory+"/"+axis
+        path = directory
         gestures = amplitude_loader(path)
         key_gesture = gestures[key_idx-1]
         
@@ -307,7 +308,7 @@ df.to_pickle("./"+"SVD_"+outname+"_"+axis+".pkl")
 
 
 nmf = NMF(n_components=p)
-pc = svd.fit_transform(matrix)
+pc = nmf.fit_transform(matrix)
 df = pd.DataFrame(data = pc) 
 df = df.T
 print("------TOP P NMF after ", outname, "-----")
