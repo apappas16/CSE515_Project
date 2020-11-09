@@ -12,8 +12,11 @@ import pandas as pd
 from scipy import stats
 from scipy import spatial
 import pandas as pd
-import numpy as np
-
+import numpy as np                  
+from math import log2                                                           
+                                                                                
+def KL_div_similarity(p, q):                                                    
+    return sum(p[i] * log2(p[i]/q[i]) for i in range(len(p)))
 
 def dot_similarity(gesture1, gesture2):                  
     x = np.array(gesture1)
