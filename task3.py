@@ -300,6 +300,7 @@ from sklearn.random_projection import sparse_random_matrix
 from sklearn.decomposition import NMF
 matrix = coo_matrix(gest_gest_sim,shape=(num_gestures,num_gestures)) 
 print(matrix)
+np.savetxt("gest_sim.csv", gest_gest_sim, delimiter=',')
 svd = TruncatedSVD(n_components=p)
 pc = svd.fit_transform(matrix)
 df = pd.DataFrame(data = pc) 

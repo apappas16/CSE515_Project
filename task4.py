@@ -162,7 +162,7 @@ def main():
     members(componentsNMF.to_numpy())
 
     # Task 4c
-    X = pd.read_csv('SVD_SVD_X.csv', header=None)
+    X = pd.read_csv('gest_sim.csv', header=None)
     X = X.to_numpy()
     print(X)
     model = K_Means(k)
