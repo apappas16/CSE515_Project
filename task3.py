@@ -308,6 +308,7 @@ print("------TOP P SVD after ", outname, "-----")
 print("* ordered in gesture, score")
 print(df)
 df.to_pickle("./"+"SVD_"+outname+"_"+axis+".pkl")
+np.savetxt('component_SVD.csv', svd.components_, delimiter=',')
 
 
 nmf = NMF(n_components=p)
@@ -318,3 +319,4 @@ print("------TOP P NMF after ", outname, "-----")
 print("* ordered in gesture, score")
 print(df)
 df.to_pickle("./"+"NMF_"+outname+"_"+axis+".pkl")
+np.savetxt('component_NMF.csv', nmf.components_, delimiter=',')
