@@ -300,6 +300,7 @@ from sklearn.random_projection import sparse_random_matrix
 from sklearn.decomposition import NMF
 matrix = coo_matrix(gest_gest_sim,shape=(num_gestures,num_gestures)) 
 print(matrix)
+np.savetxt("gest_sim.csv", gest_gest_sim, delimiter=',')
 svd = TruncatedSVD(n_components=p)
 pc = svd.fit_transform(matrix)
 df = pd.DataFrame(data = pc) 
@@ -308,6 +309,7 @@ print("------TOP P SVD after ", outname, "-----")
 print("* ordered in gesture, score")
 print(df)
 df.to_pickle("./"+"SVD_"+outname+"_"+axis+".pkl")
+np.savetxt('component_SVD.csv', svd.components_, delimiter=',')
 
 
 nmf = NMF(n_components=p)
@@ -318,3 +320,4 @@ print("------TOP P NMF after ", outname, "-----")
 print("* ordered in gesture, score")
 print(df)
 df.to_pickle("./"+"NMF_"+outname+"_"+axis+".pkl")
+np.savetxt('component_NMF.csv', nmf.components_, delimiter=',')

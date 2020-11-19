@@ -8,6 +8,8 @@ from sklearn.datasets import make_moons
 """
 Task 4a, 4b
 """
+
+
 def members(data):
     # Finding the feature each gesture contributes to the most
     max_index = np.argmax(data, axis=0)
@@ -24,6 +26,8 @@ def members(data):
 """
 Task4c: K-Means
 """
+
+
 class K_Means:
     def __init__(self, k=2, max_iter=300):
         self.k = k
@@ -75,6 +79,8 @@ class K_Means:
 """
 Task 4d: Laplacian spectral clustering
 """
+
+
 def compute_laplacian(W):
     # calculate row sums
     d = W.sum(axis=1)
@@ -112,6 +118,8 @@ def spectral_clustering(X, k):
 """
 Creatung test data
 """
+
+
 class createTestData:
     def __init__(self):
         self.X = np.array([[5, 3],
@@ -139,31 +147,43 @@ def main():
 
     testData = createTestData()
 
+    k = int(input("Enter the value of p: "))
+
     # Task 4a
-    components = pd.read_csv('data.csv', header=None)
+    componentsSVD = pd.read_csv('component_SVD.csv', header=None)
 
     print("Degree of membership considering top-p latent semantics of the gestures obtained using SVD:")
-    members(components.to_numpy())
+    members(componentsSVD.to_numpy())
+
+    # Task 4b
+    componentsNMF = pd.read_csv('component_NMF.csv', header=None)
+
+    print("Degree of membership considering top-p latent semantics of the gestures obtained using NMF:")
+    members(componentsNMF.to_numpy())
 
     # Task 4c
-    model = K_Means(k=3)
-    model.fit(testData.X)
+    X = pd.read_csv('gest_sim.csv', header=None)
+    X = X.to_numpy()
+    print(X)
+    model = K_Means(k)
+    model.fit(X)
     centers = model.cluster_centers_
-    plt.scatter(testData.X[:, 0], testData.X[:, 1],
+    plt.scatter(X[:, 0], X[:, 1],
                 c=model.labels, s=50, cmap='viridis')
     plt.scatter(centers[:, 0], centers[:, 1], c='black', s=200, alpha=0.5)
     plt.show()
 
+    """
     y_pred = model.predict(testData.Y)
     plt.scatter(testData.Y[:, 0], testData.Y[:, 1],
                 c=y_pred, s=50, cmap='viridis')
     plt.scatter(centers[:, 0], centers[:, 1], c='black', s=200, alpha=0.5)
     plt.show()
-
+    """
     # Task 4d
-    labels = spectral_clustering(testData.moon_data, 2)
+    labels = spectral_clustering(X, 2)
     plt.scatter(
-        testData.moon_data[:, 0], testData.moon_data[:, 1], c=labels, s=50, cmap='viridis')
+        X[:, 0], X[:, 1], c=labels, s=50, cmap='viridis')
     plt.show()
 
 
