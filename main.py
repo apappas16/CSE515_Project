@@ -187,7 +187,7 @@ if __name__ == '__main__':
     # for each data file create a .wrd file containing the following:
     for direct in os.listdir(directory):
         # for each csv file in X,Y,W,Z:
-        if not direct.startswith('.'):
+        if not direct.startswith('.') and not direct.endswith(".xlsx"):
             for filename in os.listdir(directory + direct):
                 if filename.endswith(".csv"):
                     bands = determineBands()
@@ -245,7 +245,7 @@ if __name__ == '__main__':
     for direct in os.listdir(directory):
         # for each gesture file in W,X,Y,Z:
         # create vector .txt files with tf and tf-idf values
-        if not direct.startswith('.'):
+        if not direct.startswith('.') and not direct.endswith(".xlsx"):
             for filename in os.listdir(directory + direct):
                 if filename.endswith(".wrd"):
                     tfFile = open(directory + direct + "/tf_vectors_" + filename[:-8] + ".txt", "w")
