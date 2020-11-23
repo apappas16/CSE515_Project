@@ -169,19 +169,23 @@ def calcIdfValue(wordTuple):
 
 def writeValsToFile():
     allWordsInGesture = getWordsFromFile(fullFileName)
+    uniqueWordsInGesture = getUniqueWordsInGesture(allWordsInGesture)
     sensorId = 1
-    for sensor in allWordsInGesture:
-        for word in sensor:
-            word_tuple = (direct, sensorId, word)
-            for n, i in enumerate(unique_dict):
-                if i == word_tuple:
-                    tfVal = unique_tf_dict[n]
-                    tfidfVal = unique_tfidf_dict[n]
-                    tfFile.write(str(tfVal) + ", ")
-                    tfidfFile.write(str(tfidfVal) + ", ")
-        tfFile.write("\n")
-        tfidfFile.write("\n")
-        sensorId += 1
+    #unique_dict is what I want
+    for sensor in uniqueWordsInGesture:
+        word_tuple = (sensor[0], sensor[1], sensor[2])
+        for n, i in enumerate(unique_dict):
+            if i == word_tuple:
+                tfVal = unique_tf_dict[n]
+                tfidfVal = unique_tfidf_dict[n]
+                tfFile.write(str(i) + "-")
+                tfidfFile.write(str(i) + "-")
+                tfFile.write(str(tfVal))
+                tfidfFile.write(str(tfidfVal))
+                tfFile.write("\n")
+                tfidfFile.write("\n")
+        
+        #sensorId += 1
 
 
 if __name__ == '__main__':
@@ -274,4 +278,6 @@ if __name__ == '__main__':
                 tfFile = open(directory + direct + "/tf_vectors_" + wrdFile[:-8] + ".txt", "w")
                 tfidfFile = open(directory + direct + "/tfidf_vectors_" + wrdFile[:-8] + ".txt", "w")
                 writeValsToFile()
+                tfFile.close()
+                tfidfFile.close()
     # End of TASK0

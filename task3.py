@@ -13,7 +13,192 @@ from scipy import stats
 from scipy import spatial
 import pandas as pd
 import numpy as np                  
-from math import log2                                                           
+from math import log2    
+
+print("Please enter the following inputs as the same values you used for task 0: ")
+#directory = input("Enter the data directory path (ex: Data/: ")
+w = input("Enter the window length (ex: 3): ")
+s = input("Enter the shift length (ex: 3): ")
+r = input("Enter the resolution (ex: 3): ")
+
+w = int(w)
+s = int(s)
+r = int(r)
+                               
+def makeMat(vectModel):    
+    #read files
+    Wmat = []
+    Xmat = []
+    Ymat = []
+    Zmat = []
+    if vectModel == "tf":
+        for axisNum in range(1, 5):
+            if axisNum == 1:
+                axis = 'W'
+            elif axisNum == 2:
+                axis = 'X'
+            elif axisNum == 3:
+                axis = 'Y'
+            elif axisNum == 4:
+                axis = 'Z'
+                
+            for file in glob.glob(directory + axis + "/tf_vectors_*.txt"):
+                #Xmat = []
+                #read tf file
+                f = open(file, "r")
+                tf_vectors = f.readlines()
+        
+                gestWords = []
+                tfVals = []
+        
+                #split the line into the word and tf value
+                for line in tf_vectors:
+                    noDash = line.split("-")
+                    tf_val = noDash[1]
+                    tf_val = tf_val.replace("\n", "")
+                    gestWords.append(noDash[0])
+                    tfVals.append(tf_val)
+           
+        
+                index = 0
+                startI = "1"
+                for y in range(1, w):
+                    startI = startI + "1"
+                startI = int(startI)
+        
+                #create dictionary with every word for every sensor and every directory
+                numWords = (startI * (2*r) - startI) * 20
+                wordMat = []
+    
+                for i in range(0, numWords + 20):
+                    wordMat.append(0)
+                
+                # put tf values into matrix where column = word
+                for x in gestWords:
+                    word = x.split(", ")
+                    sensorNum = word[1].replace("'", "")
+                    wordID = word[2].replace("'", "")
+                    wordID = wordID.replace(")", "")
+                
+                    wordID = int(wordID)
+                    sensorNum = int(sensorNum)
+                
+                    #axisSplit = len(wordMat) / 4
+                    sensorSplit = len(wordMat) / 20
+                    
+                    wordIndex = int(wordID + ((sensorNum - 1) * sensorSplit)) #+ ((axisNum - 1) * axisSplit)))
+                    wordIndex = wordIndex - startI
+            
+                    wordMat[wordIndex] = float(tfVals[index])
+                    index = index + 1
+                
+
+                if axisNum == 1:
+                    axis = 'W'
+                    Wmat.append(wordMat)
+                elif axisNum == 2:
+                    axis = 'X'
+                    Xmat.append(wordMat)
+                elif axisNum == 3:
+                    axis = 'Y'
+                    Ymat.append(wordMat)
+                elif axisNum == 4:
+                    axis = 'Z'
+                    Zmat.append(wordMat)
+                f.close()
+                
+        finalMat = np.append(Wmat, Xmat, axis = 1)
+        finalMat = np.append(finalMat, Ymat, axis = 1)
+        finalMat = np.append(finalMat, Zmat, axis = 1)
+        
+        #print(finalMat)
+        
+        return finalMat
+            #print(Xmat)
+    
+    elif vectModel == "tfidf":
+        for axisNum in range(1, 5):
+            if axisNum == 1:
+                axis = 'W'
+            elif axisNum == 2:
+                axis = 'X'
+            elif axisNum == 3:
+                axis = 'Y'
+            elif axisNum == 4:
+                axis = 'Z'
+                
+            for file in glob.glob(directory + axis + "/tfidf_vectors_*.txt"):
+                #read tf file
+                f = open(file, "r")
+                tf_vectors = f.readlines()
+        
+                gestWords = []
+                tfVals = []
+        
+                #split the line into the word and tf value
+                for line in tf_vectors:
+                    noDash = line.split("-")
+                    tf_val = noDash[1]
+                    tf_val = tf_val.replace("\n", "")
+                    gestWords.append(noDash[0])
+                    tfVals.append(tf_val)
+           
+        
+                index = 0
+                startI = "1"
+                for y in range(1, w):
+                    startI = startI + "1"
+                startI = int(startI)
+        
+                #create dictionary with every word for every sensor and every directory
+                numWords = (startI * (2*r) - startI) * 20
+                wordMat = []
+    
+                for i in range(0, numWords + 20):
+                    wordMat.append(0)
+                
+                # put tf values into matrix where column = word
+                for x in gestWords:
+                    word = x.split(", ")
+                    sensorNum = word[1].replace("'", "")
+                    wordID = word[2].replace("'", "")
+                    wordID = wordID.replace(")", "")
+                
+                    wordID = int(wordID)
+                    sensorNum = int(sensorNum)
+                
+                    #axisSplit = len(wordMat) / 4
+                    sensorSplit = len(wordMat) / 20
+                    
+                    wordIndex = int(wordID + ((sensorNum - 1) * sensorSplit)) #+ ((axisNum - 1) * axisSplit)))
+                    wordIndex = wordIndex - startI
+            
+                    wordMat[wordIndex] = float(tfVals[index])
+                    index = index + 1
+                
+
+                if axisNum == 1:
+                    axis = 'W'
+                    Wmat.append(wordMat)
+                elif axisNum == 2:
+                    axis = 'X'
+                    Xmat.append(wordMat)
+                elif axisNum == 3:
+                    axis = 'Y'
+                    Ymat.append(wordMat)
+                elif axisNum == 4:
+                    axis = 'Z'
+                    Zmat.append(wordMat)
+                f.close()
+           
+        finalMat = np.append(Wmat, Xmat, axis = 1)
+        finalMat = np.append(finalMat, Ymat, axis = 1)
+        finalMat = np.append(finalMat, Zmat, axis = 1)
+        
+        #print(finalMat)
+        
+        return finalMat
+            #print(Xmat)                                                       
                                                                                 
 def KL_div_similarity(p, q):                                                    
     return sum(p[i] * log2(p[i]/q[i]) for i in range(len(p)))
@@ -21,10 +206,10 @@ def KL_div_similarity(p, q):
 def dot_similarity(gesture1, gesture2):                  
     x = np.array(gesture1)
     y = np.array(gesture2)
-    if len(x) > len(y):
+    """if len(x) > len(y):
         y = np.pad(y, (0, len(x) - len(y)))
     else:
-        x = np.pad(x, (0, len(y) - len(x)))
+        x = np.pad(x, (0, len(y) - len(x)))"""
     return np.dot(x, y)
 
 def pears_similarity(vec1, vec2):
@@ -168,9 +353,9 @@ def amplitude_loader(directory):
         
     return gestures
 
-print("Enter directory (e.g. Data/X) :")
+print("Enter directory (e.g. Data/) :")
 directory = input()
-axis = directory.split("/")[1]
+#axis = directory.split("/")[1]
 
 print("Enter value p :")
 p = int(input())
@@ -182,13 +367,13 @@ print("Enter vector model (tf, tfidf):")
 vector_model = input()
 
 num_gestures = 0
-for filename in os.listdir(directory):                                          
+for filename in os.listdir(directory + "X"):                                          
     if not filename.endswith(".csv") :                                          
         continue
     num_gestures+=1
 print("Number of gesture : ", num_gestures)
 gest_gest_sim = [0.0]*num_gestures
-for filename in os.listdir(directory):                                          
+for filename in os.listdir(directory + "X"):                                          
     if not filename.endswith(".csv") :                                          
         continue                    
     #get indext of file                                            
@@ -196,7 +381,10 @@ for filename in os.listdir(directory):
 
     if user_option == 1:
         outname="DP"
-        gestures = tf_loader(directory)
+        
+        gestures = makeMat(vector_model)
+        
+        #gestures = tf_loader(directory)
         key_gesture = gestures[key_idx-1]
         cost=[]
         for gesture in gestures :
@@ -206,7 +394,7 @@ for filename in os.listdir(directory):
     
     elif user_option == 2:                                                        
         outname="PCA"
-        PC_path = ["PCA", axis, vector_model]
+        PC_path = ["PCA", vector_model]
         PC_path = "_".join(PC_path)
 
         pca = pd.read_pickle(PC_path + ".pkl")
@@ -220,7 +408,7 @@ for filename in os.listdir(directory):
         gest_gest_sim[key_idx-1] = cost                                         
     elif user_option == 3:
         outname="SVD"
-        PC_path = ["SVD", axis, vector_model]
+        PC_path = ["SVD", vector_model]
         PC_path = "_".join(PC_path)
         svd = pd.read_pickle(PC_path + ".pkl")                                      
         num = len(svd[0])                                                           
@@ -235,7 +423,7 @@ for filename in os.listdir(directory):
         gest_gest_sim[key_idx-1] = cost                                         
     elif user_option == 4:
         outname="NMF"
-        PC_path = ["NMF", axis, vector_model]
+        PC_path = ["NMF", vector_model]
         PC_path = "_".join(PC_path)
         nmf = pd.read_pickle(PC_path + ".pkl")
         num = len(nmf[0])                                                           
@@ -251,7 +439,7 @@ for filename in os.listdir(directory):
 
     elif user_option == 5: 
         outname="LDA"
-        PC_path = ["LDA", axis, vector_model]
+        PC_path = ["LDA", vector_model]
         PC_path = "_".join(PC_path)
         lda = pd.read_pickle(PC_path + ".pkl")
         num = len(lda[0])                                                           
@@ -266,8 +454,20 @@ for filename in os.listdir(directory):
         gest_gest_sim[key_idx-1] = cost                                         
     elif user_option == 6 :
         outname="ED"
-        path = directory
-        gestures = symbol_loader(path)
+        pathW = directory + "/W"
+        pathX = directory + "/X"
+        pathY = directory + "/Y"
+        pathZ = directory + "/Z"
+        gesturesW = symbol_loader(pathW)
+        gesturesX = symbol_loader(pathX)
+        gesturesY = symbol_loader(pathY)
+        gesturesZ = symbol_loader(pathZ)
+    
+        gestures = np.append(gesturesW, gesturesX, axis = 1)
+        gestures = np.append(gestures, gesturesY, axis = 1)
+        gestures = np.append(gestures, gesturesZ, axis = 1)
+        
+        #gestures = symbol_loader(path)
         key_gesture = gestures[key_idx-1]
         
         cost=[0]*len(gestures)
@@ -280,8 +480,21 @@ for filename in os.listdir(directory):
 
     elif user_option == 7 :
         outname="DTW"
-        path = directory
-        gestures = amplitude_loader(path)
+        
+        pathW = directory + "/W"
+        pathX = directory + "/X"
+        pathY = directory + "/Y"
+        pathZ = directory + "/Z"
+        gesturesW = amplitude_loader(pathW)
+        gesturesX = amplitude_loader(pathX)
+        gesturesY = amplitude_loader(pathY)
+        gesturesZ = amplitude_loader(pathZ)
+    
+        gestures = np.append(gesturesW, gesturesX, axis = 1)
+        gestures = np.append(gestures, gesturesY, axis = 1)
+        gestures = np.append(gestures, gesturesZ, axis = 1)
+        
+        #gestures = amplitude_loader(path)
         key_gesture = gestures[key_idx-1]
         
         cost=[0]*len(gestures)
@@ -308,7 +521,7 @@ df = df.T
 print("------TOP P SVD after ", outname, "-----")
 print("* ordered in gesture, score")
 print(df)
-df.to_pickle("./"+"SVD_"+outname+"_"+axis+".pkl")
+df.to_pickle("./"+"SVD_"+outname+".pkl")
 np.savetxt('component_SVD.csv', svd.components_, delimiter=',')
 
 
@@ -319,5 +532,5 @@ df = df.T
 print("------TOP P NMF after ", outname, "-----")
 print("* ordered in gesture, score")
 print(df)
-df.to_pickle("./"+"NMF_"+outname+"_"+axis+".pkl")
+df.to_pickle("./"+"NMF_"+outname+".pkl")
 np.savetxt('component_NMF.csv', nmf.components_, delimiter=',')
