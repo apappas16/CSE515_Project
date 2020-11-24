@@ -1,3 +1,4 @@
+#Phase2 Task 2 code
 import os
 from sklearn.metrics.pairwise import cosine_similarity                          
 from math import log
@@ -8,6 +9,7 @@ from scipy import spatial
 import pandas as pd
 import numpy as np
 from math import log2
+import sys
 import glob
 
 print("Please enter the following inputs as the same values you used for task 0: ")
@@ -490,7 +492,92 @@ elif user_option == 7 :
 else:
     print("ERROR : No such user option in this program")
     
-                                                           
+       
+file = open("similarGesturesTask6.txt", "w")
+outputList = []
+
 print("Most similar (gesture, score) ")              
 for k in cost_top_K :                                                       
-    print((cost.index(k), k))       
+    print((cost.index(k), k))  
+    outputList.append((cost.index(k), k))
+file.write(str(outputList))
+    
+file.close()
+
+#end of phase2 Task2 code
+
+# task 6
+# requests the irrelevent results and produces a new query output based on those results.
+# calls again for more feedback if requested
+def feedbackInterface(taskNum):
+    irrelevent = input("Enter the irrelevent results in a list (ex: 11 3 4): ")
+    relevent = input("Enter the relevent results in a list (ex: 26 52): ")
+    
+    #convert strings to lists
+    irrlist = list(irrelevent.split(" "))
+    irreleventFile = open("irrelevent.txt", "a")
+    irreleventFile.write(str(irrlist))
+    irreleventFile.close()
+    rlist = list(relevent.split(" "))
+    releventFile = open("relevent.txt", "w")
+    releventFile.write(str(rlist))
+    releventFile.close()
+    
+    if taskNum == "probabilistic":
+        #call feedback function for task 4
+        #parameters: list of irrelevent results, list of relevent results, original guesture file
+        
+        feedback = input("Would you like to provide feedback to improve your query output? (enter Y/N): ")
+        if feedback == "Y":
+            feedbackInterface(taskNum)
+        elif feedback == "N":
+            sys.exit()
+        
+    elif taskNum == "classifier_based":
+        #call feedback function for task 5
+        #parameters: list of irrelevent results, list of relevent results, original guesture file
+        
+        feedback = input("Would you like to provide feedback to improve your query output? (enter Y/N): ")
+        if feedback == "Y":
+            feedbackInterface(taskNum)
+        elif feedback == "N":
+            sys.exit()
+            
+# starting interface
+run = True
+releventFile = open("relevent.txt", "w")
+releventFile.write("")
+irreleventFile = open("irrelevent.txt", "w")
+irreleventFile.write("")
+releventFile.close()
+irreleventFile.close()
+
+while run == True:
+    """gestfile = input("W (ex: 1.csv, or exit for termination): ")
+    
+    #exit loop
+    if gestfile == "exit":
+        run = False
+        break"""
+
+    taskNum = input("Please enter the relevence technique you would like (enter probabilistic or classifier_based): ")
+    resultNum = input("Please enter the number of results you would like to recieve: (ex: 5): ")
+    
+    #call task 4 or 5 here:
+    if taskNum == "probabilistic":
+        #call task 4
+        #parameters: guesture file to find comparisons, number of results
+        
+        feedback = input("Would you like to provide feedback to improve your query output? (enter Y/N): ")
+        if feedback == "Y":
+            feedbackInterface(taskNum)
+        
+    elif taskNum == "classifier_based":
+        #call task 5
+        #parameters: guesture file to find comparisons, number of results
+        
+        feedback = input("Would you like to provide feedback to improve your query output? (enter Y/N): ")
+        if feedback == "Y":
+            feedbackInterface(taskNum)
+  
+        
