@@ -8,6 +8,7 @@ from scipy import spatial
 import pandas as pd
 import numpy as np
 from math import log2
+import glob
 
 print("Please enter the following inputs as the same values you used for task 0: ")
 #directory = input("Enter the data directory path (ex: Data/: ")
