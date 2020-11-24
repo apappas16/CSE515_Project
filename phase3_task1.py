@@ -4,19 +4,12 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
 import itertools
+import csv
+import pandas as pd
 from scipy import spatial
 
 
 # FUNCTIONS:
-def dotSimilarity(gesture1, gesture2):
-    x = np.array(gesture1)
-    y = np.array(gesture2)
-    if len(x) > len(y):
-        y = np.pad(y, (0, len(x) - len(y)))
-    elif len(x) < len(y):
-        x = np.pad(x, (0, len(y) - len(x)))
-    return np.dot(x, y)
-
 
 # Takes into 2 gesture vectors of tf values and returns the cosine similarity between the two gestures
 # Used for computing the gesture-gesture similarity matrix
@@ -53,9 +46,9 @@ def tf_loader(directory):
 
 # Takes in a component directory and returns a list of all the csv file names without the extension
 # e.g. '1.csv' is added as '1' to the list
-def getGestureNames(directory):
+def getGestureNames(direct):
     gestureNames = []
-    for filename in os.listdir(directory):
+    for filename in os.listdir(direct):
         if filename.endswith(".csv"):
             name = filename[:-4]
             gestureNames.append(name)
@@ -65,20 +58,40 @@ def getGestureNames(directory):
 # Calculates a similarity matrix for a given component
 # Rows in the matrix are for each gesture file
 # Each row has k columns for the number of k most-similar gestures it has
-def calcSimMatrix(component):
+def calcSimMatrix():
     sim_matrix = []
-    gestures = tf_loader(directory + "/" + component)
-    gestureNames = getGestureNames(directory + "/" + component)
-    for i in range(len(gestures)):
-        key_gesture = gestures[i]
-        all_gestures_similarities = []
-        for j in range(len(gestures)):
-            other_gesture = gestures[j]
-            gesture_sim = (gestureNames[j], cos_similarity(key_gesture, other_gesture))
-            all_gestures_similarities.append(gesture_sim)
-        all_gestures_similarities.sort(key = lambda x: x[1], reverse=True)
-        topKGestures = all_gestures_similarities[:k]
-        sim_matrix.append(topKGestures)
+    gest_nxn_matrix = []
+    gest_nxn_key_matrix = []
+    for component in os.listdir(directory):
+        # make sure only look at Lettered directories (W, X, Y, or Z)
+        if len(component) == 1:
+            gestures = tf_loader(directory + "/" + component)
+            gestureNames = getGestureNames(directory + "/" + component)
+            for i in range(len(gestures)):
+                key_gesture = gestures[i]
+                all_gestures_similarities = []
+                all_nxn_gest_scores = []
+                all_nxn_key_gest_scores = []
+                for j in range(len(gestures)):
+                    other_gesture = gestures[j]
+                    gesture_sim = (gestureNames[j], cos_similarity(key_gesture, other_gesture))
+                    all_nxn_key_gest_scores.append(str(gestureNames[j]))
+                    all_nxn_gest_scores.append(gesture_sim[1])
+                    all_gestures_similarities.append(gesture_sim)
+                all_gestures_similarities.sort(key = lambda x: x[1], reverse=True)
+                topKGestures = all_gestures_similarities[:k]
+                sim_matrix.append(topKGestures)
+                gest_nxn_key_matrix.append(all_nxn_key_gest_scores)
+                gest_nxn_matrix.append(all_nxn_gest_scores)
+
+    with open("gest_sim_phase3.csv", "w+") as f1:
+        csvWriter = csv.writer(f1, delimiter=',')
+        csvWriter.writerows(gest_nxn_matrix)
+
+    with open("gest_sim_phase3_key.csv", "w+") as f2:
+        csvWriter = csv.writer(f2, delimiter=',')
+        csvWriter.writerows(gest_nxn_key_matrix)
+
     return sim_matrix
 
 
@@ -98,49 +111,88 @@ def buildGraph(graph, matrix):
 # 1 element in vector for each gesture file in component with a value 0
 # If an index of the vector matches the gesture file index, change value from 0 to 1/n
 def calcSeedVector(n, seedGestures):
-    seedVector = [0] * len(sim_matrix)
-    for i in range(len(all_gestures)):
+    gestures = getGestureNames(directory + "/W")
+    seedVector = [0] * (int(len(sim_matrix)/4))
+    for i in range(len(gestures)):
         for seed in seedGestures:
-            if seed == all_gestures[i]:
+            if seed == int(gestures[i]):
                 seedVector[i] = 1/n
                 break
-    return seedVector
+    return seedVector, gestures
 
 
 # Takes in a seed vector and converts it to a dictionary of format:
 # {gesture1: seedVectorValue, gesture2: seedVectorValue, ...}
-def getDictFromVector(vector):
-    dictionary = {all_gestures[i]: vector[i] for i in range(len(all_gestures))}
+def getDictFromVector(vector, gestures):
+    dictionary = {gestures[i]: vector[i] for i in range(len(gestures))}
     return dictionary
 
+
+def plotDomGestures(gesture_names):
+    for gesture in gesture_names:
+        for component in os.listdir(directory):
+            if len(component) == 1:
+                pathToCsv = directory + "/" + component + "/" + gesture + ".csv"
+                with open(pathToCsv, 'r') as f:
+                    data = csv.reader(f, delimiter=',')
+                    sensorId = 1
+                    for sensor in data:
+                        x = np.array(range(1, len(sensor)+1))
+                        sensorData = []
+                        for value in sensor:
+                            sensorData.append(value)
+                        plt.plot(x, np.array(sensorData), label='Series' + str(sensorId))
+                        sensorId += 1
+                    plt.xlabel('X-axis over time')
+                    plt.yticks(np.arange(-1, 1, .2))
+                    plt.ylabel('Sensor value')
+                    plt.title(component + "_" + gesture)
+                    plt.legend()
+                    plt.show()
 
 # END OF FUNCTIONS
 
 
 if __name__ == '__main__':
+    """
+    MAKE 4 SUBPLOTS FOR W X Y Z COMPONENTS OF A GESTURE GRAPH:
+    fig, axs = plt.subplots(2, 2)
+    axs[0, 0].plot(x, y1)
+    axs[0, 0].set_title('W')
+    axs[0, 1].plot(x, y1, 'tab:orange')
+    axs[0, 1].set_title('X')
+    axs[1, 0].plot(x, -y1, 'tab:green')
+    axs[1, 0].set_title('Y')
+    axs[1, 1].plot(x, -y1, 'tab:red')
+    axs[1, 1].set_title('Z')
+
+    for ax in axs.flat:
+        ax.set(xlabel='x-label', ylabel='y-label')
+
+    # Hide x labels and tick labels for top plots and y ticks for right plots.
+    for ax in axs.flat:
+        ax.label_outer()
+    """
+
     directory = input("Enter the name of the root data directory: ")
-    all_gestures = getGestureNames(directory + "/W")
+    w_gestures = getGestureNames(directory + "/W")
+    x_gestures = getGestureNames(directory + "/X")
+    y_gestures = getGestureNames(directory + "/Y")
+    z_gestures = getGestureNames(directory + "/Z")
+
+    all_gestures = w_gestures + x_gestures + y_gestures + z_gestures
 
     k = input("Enter a value for 'k' for the number of outgoing edges of nodes: ")
     k = int(k)
 
-    # Create graphs for each component
-    W_G = nx.DiGraph()
-    X_G = nx.DiGraph()
-    Y_G = nx.DiGraph()
-    Z_G = nx.DiGraph()
+    # Create graph for gesture nodes
+    G = nx.DiGraph()
 
     print("Generating gesture to gesture similarity graph... " + "\n")
 
-    # Fill graphs with nodes and edges based on their gesture-gesture similarity
-    sim_matrix = calcSimMatrix("W")
-    buildGraph(W_G, sim_matrix)
-    sim_matrix = calcSimMatrix("X")
-    buildGraph(X_G, sim_matrix)
-    sim_matrix = calcSimMatrix("Y")
-    buildGraph(Y_G, sim_matrix)
-    sim_matrix = calcSimMatrix("Z")
-    buildGraph(Z_G, sim_matrix)
+    # Fill graph with nodes and edges based on their gesture-gesture similarity
+    sim_matrix = calcSimMatrix()
+    buildGraph(G, sim_matrix)
 
     n = input("Enter a value for 'n' for the number of 'seed' gestures: ")
     n = int(n)
@@ -155,59 +207,22 @@ if __name__ == '__main__':
     m = input("Enter a value 'm' for the number of most dominant gestures to find: ")
     m = int(m)
 
-    seed_vector = calcSeedVector(n, seed_gestures)
+    seed_vector, gestures = calcSeedVector(n, seed_gestures)
     print("Seed vector: ")
     print(seed_vector)
 
-    seed_dict = getDictFromVector(seed_vector)
-    ppr_w = nx.pagerank(W_G, personalization=seed_dict)
+    seed_dict = getDictFromVector(seed_vector, gestures)
 
-    ppr_x = nx.pagerank(X_G, personalization=seed_dict)
+    ppr = nx.pagerank(G, personalization=seed_dict)
+    ppr_m = dict(sorted(ppr.items(), key=operator.itemgetter(1), reverse=True))
+    ppr_m = dict(itertools.islice(ppr_m.items(), m))
 
-    ppr_y = nx.pagerank(Y_G, personalization=seed_dict)
+    print("Most Dominant Gestures in " + directory + ":")
+    print(ppr_m)
 
-    ppr_z = nx.pagerank(Z_G, personalization=seed_dict)
+    # get the names of the most dominant gestures from dictionary
+    most_dom_gest_names = []
+    for dom_gest in ppr_m:
+        most_dom_gest_names.append(dom_gest)
 
-    ppr_w_m = dict(sorted(ppr_w.items(), key=operator.itemgetter(1), reverse=True))
-    ppr_w_m = dict(itertools.islice(ppr_w_m.items(), m))
-
-    ppr_x_m = dict(sorted(ppr_x.items(), key=operator.itemgetter(1), reverse=True))
-    ppr_x_m = dict(itertools.islice(ppr_x_m.items(), m))
-
-    ppr_y_m = dict(sorted(ppr_y.items(), key=operator.itemgetter(1), reverse=True))
-    ppr_y_m = dict(itertools.islice(ppr_y_m.items(), m))
-
-    ppr_z_m = dict(sorted(ppr_z.items(), key=operator.itemgetter(1), reverse=True))
-    ppr_z_m = dict(itertools.islice(ppr_z_m.items(), m))
-
-    print("Most Dominant Gestures in W:")
-    print(ppr_w_m)
-
-    print("Most Dominant Gestures in X:")
-    print(ppr_x_m)
-
-    print("Most Dominant Gestures in Y:")
-    print(ppr_y_m)
-
-    print("Most Dominant Gestures in Z:")
-    print(ppr_z_m)
-
-
-
-
-
-"""
-
-In Task 1, you will be given a data set, which contains, say N, gestures.
-
-From this, you will first create a graph G where each gesture node has outing edges to k most similar gestures.
-
-You will then take a small subset (of size n) of these N gestures as seed nodes.
-
-Then, you will identify "m" gesture nodes in the data set that are the most dominant with respect to the given seeds, relying on the PPR approach.
-
-we create a single vector, with "1's" at the indices corresponding to each of the n gestures. 
-So for instance, if we had 5 gestures and picked n = 2 of them (let's say they were 1,3), the seed vector would be 
-[.5 0 .5 0 0]
-
-"""
+    plotDomGestures(most_dom_gest_names)
