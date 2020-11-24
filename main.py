@@ -209,58 +209,59 @@ if __name__ == '__main__':
     # for each data file create a .wrd file containing the following:
     for direct in os.listdir(directory):
         # for each csv file in X,Y,W,Z:
-        for filename in os.listdir(directory + direct):
-            if filename.endswith(".csv"):
-                bands = determineBands()
+        if not direct.startswith('.') and not direct.endswith(".xlsx"):
+            for filename in os.listdir(directory + direct):
+                if filename.endswith(".csv"):
+                    bands = determineBands()
 
-                # generate .wrd file
-                with open(str(directory) + str(direct) + "/" + str(filename) + ".wrd", "w") as wrdFile:
+                    # generate .wrd file
+                    with open(str(directory) + str(direct) + "/" + str(filename) + ".wrd", "w") as wrdFile:
 
-                    sensor_id = 1
-                    csvFile = open(str(directory) + str(direct) + "/" + filename, "r")
-                    reader = csv.reader(csvFile, delimiter=',')
-                    # for each sensor sj in file
-                    for sensor in reader:
-                        # output component ID, c in output file
-                        wrdFile.write(str(direct) + ", ")
+                        sensor_id = 1
+                        csvFile = open(str(directory) + str(direct) + "/" + filename, "r")
+                        reader = csv.reader(csvFile, delimiter=',')
+                        # for each sensor sj in file
+                        for sensor in reader:
+                            # output component ID, c in output file
+                            wrdFile.write(str(direct) + ", ")
 
-                        # write sensorID to wrd file
-                        wrdFile.write(str(sensor_id) + ", ")
+                            # write sensorID to wrd file
+                            wrdFile.write(str(sensor_id) + ", ")
 
-                        # compute and output average amplitude, avgij of the values
-                        sensorVals = list(sensor)
-                        sensorVals = [float(i) for i in sensorVals]
-                        sensorAvg = calcAvgSensorValue(sensorVals)
-                        wrdFile.write(str(sensorAvg) + ", ")
+                            # compute and output average amplitude, avgij of the values
+                            sensorVals = list(sensor)
+                            sensorVals = [float(i) for i in sensorVals]
+                            sensorAvg = calcAvgSensorValue(sensorVals)
+                            wrdFile.write(str(sensorAvg) + ", ")
 
-                        # compute and output standard deviations stdij of the values
-                        stdDev = calcStdDev(sensorVals, sensorAvg)
-                        wrdFile.write(str(stdDev) + ", ")
+                            # compute and output standard deviations stdij of the values
+                            stdDev = calcStdDev(sensorVals, sensorAvg)
+                            wrdFile.write(str(stdDev) + ", ")
 
-                        # normalize entries between -1 and 1
-                        normSensorVals = normalize(sensorVals)
+                            # normalize entries between -1 and 1
+                            normSensorVals = normalize(sensorVals)
 
-                        # quantizes entries into 2r levels as in phase 1
-                        quantizedSensor = quantize(normSensorVals, bands)
+                            # quantizes entries into 2r levels as in phase 1
+                            quantizedSensor = quantize(normSensorVals, bands)
 
-                        # moves a w-length window on time series (by shifting it s units at a time), and at position h
-                        sensorWords = getWords()
+                            # moves a w-length window on time series (by shifting it s units at a time), and at position h
+                            sensorWords = getWords()
 
-                        # computes and outputs in file average quantized amplitude avgQijh for window h of sensor sj
-                        avgQuanAmp = calcAvgQuanAmp()
-                        wrdFile.write(str(avgQuanAmp) + ", " + " - ")
+                            # computes and outputs in file average quantized amplitude avgQijh for window h of sensor sj
+                            avgQuanAmp = calcAvgQuanAmp()
+                            wrdFile.write(str(avgQuanAmp) + ", " + " - ")
 
-                        # outputs symbolic quantized window descriptor winQijh for the window h of sensor sj
-                        wrdFile.write(str(sensorWords) + "\n")
+                            # outputs symbolic quantized window descriptor winQijh for the window h of sensor sj
+                            wrdFile.write(str(sensorWords) + "\n")
 
-                        # add dictionary of each window to gestureDict list
-                        for window in sensorWords:
-                            wordDict = (direct, sensor_id, window)
-                            all_gesture_dict.append(wordDict)
-                            if wordDict not in unique_dict:
-                                unique_dict.append(wordDict)
+                            # add dictionary of each window to gestureDict list
+                            for window in sensorWords:
+                                wordDict = (direct, sensor_id, window)
+                                all_gesture_dict.append(wordDict)
+                                if wordDict not in unique_dict:
+                                    unique_dict.append(wordDict)
 
-                        sensor_id += 1
+                            sensor_id += 1
         # The dictionary of the words consists of <componentName, sensorID, winQ>
 
     # TASK 0B
@@ -272,12 +273,13 @@ if __name__ == '__main__':
         unique_tfidf_dict.append(tf_idf_value)
 
     for direct in os.listdir(directory):
-        for wrdFile in os.listdir(directory + direct):
-            if wrdFile.endswith(".wrd"):
-                fullFileName = directory + direct + "/" + wrdFile
-                tfFile = open(directory + direct + "/tf_vectors_" + wrdFile[:-8] + ".txt", "w")
-                tfidfFile = open(directory + direct + "/tfidf_vectors_" + wrdFile[:-8] + ".txt", "w")
-                writeValsToFile()
-                tfFile.close()
-                tfidfFile.close()
+        if not direct.startswith('.') and not direct.endswith(".xlsx"):
+            for wrdFile in os.listdir(directory + direct):
+                if wrdFile.endswith(".wrd"):
+                    fullFileName = directory + direct + "/" + wrdFile
+                    tfFile = open(directory + direct + "/tf_vectors_" + wrdFile[:-8] + ".txt", "w")
+                    tfidfFile = open(directory + direct + "/tfidf_vectors_" + wrdFile[:-8] + ".txt", "w")
+                    writeValsToFile()
+                    tfFile.close()
+                    tfidfFile.close()
     # End of TASK0
