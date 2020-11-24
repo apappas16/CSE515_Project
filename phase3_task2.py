@@ -116,7 +116,6 @@ def getLabel(labelled_gest_list, labels, filename):
 
 
 def main():
-    gestureNames = []
     gestureNames = getGestureNames()
     labelled_gest_list = []
     unlabelled_gest_list = []
@@ -134,3 +133,14 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+    """
+    there i've lists of all the files, unlabelled files, and labelled files in order. 
+    just take a look at the main function, you don't have to do through all of it. 
+    can you arrange the vectors of the gesture files in that order? so that i can 
+    feed those vectors to the classifiers and its corresponding labels through two lists
+    
+    and also make sure the similarity matrix is in that order. so, if the list gestureNames[] 
+    is a nx1 matrix, then the similarity matrix should be nxn in that same order across the row 
+    and column
+    """
