@@ -21,14 +21,11 @@ The file has main() which runs the processes for Task 4 and prints the partition
 This file takes the similarities of multiple files and visualizes the most dominate gestures
 
 ## phase3_task2.py
-This file takes the similarity matrix from phase 2 and computes KNN to predict the labels of the gestures.
-This file also takes user input to create a PPR for the proceeding tasks.
+Task2: This file takes the similarity matrix from phase 2 and computes KNN to predict the labels of the gestures.
+Task5: This file also has task5 which takes user input to create a PPR.
 
 ## phase3_task4.py
 This file implements probabilistic relevance to improve the KNN classification
-
-## phase3_task5.py
-This file implements PPR to improve the KNN classification
 
 ## task6.py
 This file is the interface for task 4 and 5. It formats the user inputs for the other tasks so that the user can provide feedback to the PPR.
