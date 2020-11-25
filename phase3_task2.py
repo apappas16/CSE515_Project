@@ -3,9 +3,11 @@ import pandas as pd
 import copy
 import re
 import os
+import pickle
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.metrics import accuracy_score
 from collections import Counter
+import networkx as nx
 
 numbers = re.compile(r'(\d+)')
 
@@ -25,11 +27,11 @@ class KNeighborsClassifier:
         return np.array(labels)
 
     def _predict(self, x):
-        distances = [euclidean_distances(x, x_train)
-                     for x_train in self.X_train]
         distances = []
         for x_train in self.X_train:
-            distances.append(euclidean_distances(x, x_train))
+            #print(x, x_train)
+            #distances.append(euclidean_distances(x, x_train))
+            distances.append(np.linalg.norm(np.array(x)-np.array(x_train)))
 
         k_indices = np.argsort(distances)
         k_indices = k_indices[:self.n_neighbors]
@@ -77,9 +79,11 @@ class PersonalizedPageRank:
             rank += 1
         return self.ranked_dict
 
-    def labels(self):
-
-        pass
+    def labels(self, label_list):
+        k_labels = []
+        for key, value in self.ranked_dict.items():
+            k_labels.append(label_list[self.gest_list.index(key)])
+        label = Counter(k_labels).most_common(1)
 
     def relevanceFeedback(self):
         while True:
@@ -111,36 +115,46 @@ def numericalSort(value):
     return parts
 
 
-def getLabel(labelled_gest_list, labels, filename):
-    return labels[labelled_gest_list.index(filename)]
+def getLabel(labeled_gest_list, labels, filename):
+    return labels[labeled_gest_list.index(filename)]
 
 
 def main():
+    gestureNames = []
     gestureNames = getGestureNames()
-    labelled_gest_list = []
-    unlabelled_gest_list = []
+    """Labeled and Unlabeled gesture filenames list"""
+    labeled_gest_list = []
+    unlabeled_gest_list = []
+    """Labeled and Unlabeled gesture vectors"""
+    labeled_vectors = []
+    unlabeled_vectors = []
+    with open('PCA_tf.pkl', 'rb') as f:
+        vectors = pickle.load(f)
+    vectors = vectors.values.tolist()
+
     for file in gestureNames:
         if '_' in file:
-            unlabelled_gest_list.append(file)
+            unlabeled_gest_list.append(file)
+            unlabeled_vectors.append(vectors[gestureNames.index(file)])
         else:
-            labelled_gest_list.append(file)
+            labeled_gest_list.append(file)
+            labeled_vectors.append(vectors[gestureNames.index(file)])
 
     labels = pd.read_excel('labels.xlsx', header=None,
                            index_col=None, usecols='B')
     labels = labels.values.ravel().tolist()
-    print(getLabel(labelled_gest_list, labels, '589.csv'))
+    #print(getLabel(labeled_gest_list, labels, '589.csv'))
+
+    # print("######### KNN Classification #########")
+    knn = KNeighborsClassifier()
+    knn.fit(labeled_vectors, labels)
+    pred = knn.predict(unlabeled_vectors)
+    for i in range(len(unlabeled_gest_list)):
+        print(unlabeled_gest_list[i], pred.tolist()[i])
+
+    sim_mat = pd.read_csv('gest_sim.csv', header=None)
+    # print(sim_mat.shape)
 
 
 if __name__ == "__main__":
     main()
-
-    """
-    there i've lists of all the files, unlabelled files, and labelled files in order. 
-    just take a look at the main function, you don't have to do through all of it. 
-    can you arrange the vectors of the gesture files in that order? so that i can 
-    feed those vectors to the classifiers and its corresponding labels through two lists
-    
-    and also make sure the similarity matrix is in that order. so, if the list gestureNames[] 
-    is a nx1 matrix, then the similarity matrix should be nxn in that same order across the row 
-    and column
-    """
