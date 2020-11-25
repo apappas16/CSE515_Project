@@ -5,7 +5,6 @@ import networkx as nx
 import numpy as np
 import itertools
 import csv
-import pandas as pd
 from scipy import spatial
 
 
@@ -128,6 +127,7 @@ def getDictFromVector(vector, gestures):
     return dictionary
 
 
+# takes in a list of the m most dominant gestures and creates 4 graphs for each gesture
 def plotDomGestures(gesture_names):
     for gesture in gesture_names:
         for component in os.listdir(directory):
@@ -154,26 +154,6 @@ def plotDomGestures(gesture_names):
 
 
 if __name__ == '__main__':
-    """
-    MAKE 4 SUBPLOTS FOR W X Y Z COMPONENTS OF A GESTURE GRAPH:
-    fig, axs = plt.subplots(2, 2)
-    axs[0, 0].plot(x, y1)
-    axs[0, 0].set_title('W')
-    axs[0, 1].plot(x, y1, 'tab:orange')
-    axs[0, 1].set_title('X')
-    axs[1, 0].plot(x, -y1, 'tab:green')
-    axs[1, 0].set_title('Y')
-    axs[1, 1].plot(x, -y1, 'tab:red')
-    axs[1, 1].set_title('Z')
-
-    for ax in axs.flat:
-        ax.set(xlabel='x-label', ylabel='y-label')
-
-    # Hide x labels and tick labels for top plots and y ticks for right plots.
-    for ax in axs.flat:
-        ax.label_outer()
-    """
-
     directory = input("Enter the name of the root data directory: ")
     w_gestures = getGestureNames(directory + "/W")
     x_gestures = getGestureNames(directory + "/X")
