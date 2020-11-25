@@ -5,7 +5,17 @@
 # Takes in the results from the previous query and displays the results in a new different order
 # given list of irrelevant and relevant gestures
 def reorder_results(results, relevantList, irrelevantList):
-    pass
+    new_results = []
+    last_results = []
+    for gesture in results:
+        if gesture in relevantList:
+            new_results.append(gesture)
+        elif gesture not in irrelevantList:
+            last_results.append()
+    new_results = new_results + last_results
+    print("Re-ordered results:\n")
+    for result in new_results:
+        print(result)
 
 # Changes some parameters from original query and returns new results as well as what was changed
 # about the original query
