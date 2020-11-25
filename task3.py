@@ -13,7 +13,10 @@ from scipy import stats
 from scipy import spatial
 import pandas as pd
 import numpy as np                  
-from math import log2    
+from math import log2  
+import glob
+
+numbers = re.compile(r'(\d+)')
 
 print("Please enter the following inputs as the same values you used for task 0: ")
 #directory = input("Enter the data directory path (ex: Data/: ")
@@ -24,6 +27,11 @@ r = input("Enter the resolution (ex: 3): ")
 w = int(w)
 s = int(s)
 r = int(r)
+
+def numericalSort(value):
+    parts = numbers.split(value)
+    parts[1::2] = map(int, parts[1::2])
+    return parts
                                
 def makeMat(vectModel):    
     #read files
@@ -373,11 +381,13 @@ for filename in os.listdir(directory + "X"):
     num_gestures+=1
 print("Number of gesture : ", num_gestures)
 gest_gest_sim = [0.0]*num_gestures
-for filename in os.listdir(directory + "X"):                                          
-    if not filename.endswith(".csv") :                                          
-        continue                    
+gest_index = 1
+for filename in sorted(glob.glob(directory + "/X" + "/*.csv"), key=numericalSort):                                          
+    #if not filename.endswith(".csv") :                                          
+     #   continue                    
     #get indext of file                                            
-    key_idx = int(filename.split(".")[0])
+    key_idx = gest_index
+    
 
     if user_option == 1:
         outname="DP"
@@ -503,7 +513,9 @@ for filename in os.listdir(directory + "X"):
                 n = len(sensor)                                                     
                 m = len(key_gesture[j])                                             
                 cost[i] += dynamic_time_warping(key_gesture[j], sensor, m, n)    
-        gest_gest_sim[key_idx-1] = cost                                         
+        gest_gest_sim[key_idx-1] = cost  
+        
+    gest_index = gest_index + 1
      
 import pandas as pd
 from sklearn.decomposition import TruncatedSVD                                  
