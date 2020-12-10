@@ -4,7 +4,6 @@ import copy
 import re
 import os
 import pickle
-from sklearn import preprocessing
 from sklearn.metrics.pairwise import euclidean_distances
 from sklearn.metrics import accuracy_score
 from collections import Counter
@@ -49,91 +48,57 @@ class KNeighborsClassifier:
 
 
 class PersonalizedPageRank:
-    def fit(self, gest_list, sim_graph):
+    def __init__(self, sim_graph):
+        self.sim_graph = np.array(sim_graph)
+
+    def fit(self, gest_list, query_list):
         self.gest_list = gest_list
-        self.sim_graph = sim_graph
+        self.query_list = query_list
 
-    def pagerank(self, vattene_list, combinato_list, daccordo_list):
-        self.vattene_list = vattene_list
-        self.combinato_list = combinato_list
-        self.daccordo_list = daccordo_list
-
-        self.vattene_dict = self._pagerank(vattene_list)
-        self.combinato_dict = self._pagerank(combinato_list)
-        self.daccordo_dict = self._pagerank(daccordo_list)
-        self._labels()
-
-    def _pagerank(self, query_list, k=10, damping=0.85, max_iter=500):
+    def pagerank(self, k=5, damping=0.85, max_iter=1000):
         graph_transpose = self.sim_graph.transpose()
-        seed_matrix = np.array([0 if file not in query_list else 1 / len(
-            query_list) for file in self.gest_list]).reshape(len(self.gest_list), 1)
+        new_page_rank = np.array([0 if img not in self.query_list else 1 / len(
+            self.query_list) for img in self.gest_list]).reshape(len(self.gest_list), 1)
 
-        new_page_rank = np.copy(seed_matrix)
-        #print(new_page_rank)
-        old_page_rank = np.empty_like(new_page_rank)
+        old_page_rank = np.array((len(self.gest_list)), 1)
         iter = 0
-        while iter < max_iter and not np.array_equal(new_page_rank, old_page_rank):
-            old_page_rank = np.copy(new_page_rank)
-            new_page_rank = (1-damping) * np.matmul(graph_transpose, old_page_rank) + damping * seed_matrix
+        while iter < max_iter and np.array_equal(new_page_rank, old_page_rank):
+            old_page_rank = copy.deepcopy(new_page_rank)
+            new_page_rank = damping * \
+                np.matmul(graph_transpose, old_page_rank) + \
+                (1 - damping) * new_page_rank
             iter += 1
 
         new_page_rank = new_page_rank.ravel()
-        self.sorted_rank = (-new_page_rank).argsort()[:k]
-        #print(sorted_rank)
-        #print(new_page_rank)
-        score_dict = {}
+        sorted_rank = (-new_page_rank).argsort()[:k]
 
-        for i in range(len(new_page_rank)):
-            score_dict[self.gest_list[i]] = new_page_rank[i]
-        
-        return score_dict
+        rank = 1
+        self.ranked_dict = {}
+        for i in sorted_rank:
+            self.ranked_dict[self.gest_list[i]] = rank
+            rank += 1
+        return self.ranked_dict
 
-    def _labels(self):
-        pred_dict = {}
-        
-        for file in self.gest_list:
-            index = np.argmax(np.array([self.vattene_dict[file], self.combinato_dict[file], self.daccordo_dict[file]]))
-            if index == 0:
-                pred_dict[file] = "vattene"
-            elif index == 1:
-                pred_dict[file] = "combinato"
-            elif index == 2:
-                pred_dict[file] = "daccordo"
-        
-        print(pred_dict)
-        
-        
+    def labels(self, label_list):
+        k_labels = []
+        for key, value in self.ranked_dict.items():
+            k_labels.append(label_list[self.gest_list.index(key)])
+        label = Counter(k_labels).most_common(1)
 
-    
-    def relevanceFeedback(self, query_list):
+    def relevanceFeedback(self):
         while True:
-            self._pagerank(query_list)
-            rank = 1
-            for index in self.sorted_rank:
-                print(str(rank) + ".", self.gest_list[index])
-                rank += 1
-            #for key, value in self.ranked_dict.items():
-                #print(value, key)
+            self.pagerank()
+            for key, value in self.ranked_dict.items():
+                print(value, key)
+
             print("Do you want to continue?")
             choice = input("Press [y/n]")
             if choice == "n":
                 break
-            print("Select the relevant gestures: ")
-            rel_list = list(map(int, input().split()))
-            print("Select the irrelevant gestures: ")
-            irrel_list = list(map(int, input().split()))
-            nofeed_list = []
-            #nofeed_list = list(index if index not in rel_list for index in self.sorted_rank)
-            for index in self.sorted_rank:
-                if index not in rel_list and index not in irrel_list:
-                    nofeed_list.append(index)
-            print(nofeed_list)
+            print("Select the relevant gestures")
 
         pass
 
-def getSimGraph(sim_mat, k):
-    sim_graph = np.copy(sim_mat)
-    return sim_graph * (sim_graph >= np.sort(sim_graph, axis=1)[:,[-k]]).astype(int)
 
 def getGestureNames(directory='Data/Z/'):
     gestureNames = []
@@ -143,21 +108,6 @@ def getGestureNames(directory='Data/Z/'):
             gestureNames.append(name)
     return gestureNames
 
-def filterGestureByName(labeled_gest_list, labels, label_set):
-    label1_list = []
-    label2_list = []
-    label3_list = []
-    label4_list = []
-    label5_list = []
-    label6_list = []
-    for file, label in zip(labeled_gest_list, labels):
-        if label == label_set[0]:
-            label1_list.append(file)
-        elif label == label_set[1]:
-            label2_list.append(file)
-        elif label == label_set[2]:
-            label3_list.append(file)
-    return label1_list, label2_list, label3_list
 
 def numericalSort(value):
     parts = numbers.split(value)
@@ -190,46 +140,21 @@ def main():
             labeled_gest_list.append(file)
             labeled_vectors.append(vectors[gestureNames.index(file)])
 
-    #labels = pd.read_excel('labels.xlsx', index_col=None, usecols='B')
-    labels = pd.read_excel('labels.xlsx',
-                           index_col=None)
-    #labels = labels.values.ravel().tolist()
-    print(labels.columns[])
-    #label_set = list(set(labels))
-    #print(label_set)
-    #print(getLabel(labeled_gest_list, labels, '81.csv'))
+    labels = pd.read_excel('labels.xlsx', header=None,
+                           index_col=None, usecols='B')
+    labels = labels.values.ravel().tolist()
+    #print(getLabel(labeled_gest_list, labels, '589.csv'))
 
-    norm_labeled_vectors = preprocessing.normalize(np.array(labeled_vectors))
-    norm_unlabeled_vectors = preprocessing.normalize(np.array(unlabeled_vectors))
-    
-    """
-    print("######### KNN Classification #########")
+    # print("######### KNN Classification #########")
     knn = KNeighborsClassifier()
-    knn.fit(norm_labeled_vectors, labels)
-    pred = knn.predict(norm_unlabeled_vectors)
+    knn.fit(labeled_vectors, labels)
+    pred = knn.predict(unlabeled_vectors)
     for i in range(len(unlabeled_gest_list)):
         print(unlabeled_gest_list[i], pred.tolist()[i])
-    """
 
-    print("######### PPR Classification #########")
     sim_mat = pd.read_csv('gest_sim.csv', header=None)
     # print(sim_mat.shape)
-    k= int(input("Enter the k value (no. of outgoing edges) for the similairty graph: "))
-    sim_graph = getSimGraph(np.array(sim_mat), k)
-    #print(sim_graph.shape)
 
-    vattene_list, combinato_list, daccordo_list = filterGestureByName(labeled_gest_list, labels, label_set)
-    print(daccordo_list)
-
-    norm_sim_graph = preprocessing.normalize(sim_graph)
-
-    
-    ppr = PersonalizedPageRank()
-    ppr.fit(gestureNames, norm_sim_graph)
-    ppr.pagerank(vattene_list, combinato_list, daccordo_list)
-    
-    
-    
 
 if __name__ == "__main__":
     main()
