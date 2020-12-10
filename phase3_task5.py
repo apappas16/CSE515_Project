@@ -95,7 +95,7 @@ class PersonalizedPageRank:
         for index in range(len(self.gest_list)):
             if self.gest_list[index] not in result_list:
                 self.sim_graph[index] = 0
-        print(self.sim_graph)
+        #print(self.sim_graph)
         pass
 
 
@@ -176,13 +176,17 @@ def main():
         print(unlabeled_gest_list[i], pred.tolist()[i])
     """
 
-    print("######### PPR Classification #########")
+    print("######### PPR Relevance Feedback #########")
     sim_mat = pd.read_csv('gest_sim.csv', header=None)
     # print(sim_mat.shape)
-    k = int(
-        input("Enter the k value (no. of outgoing edges) for the similairty graph: "))
+    k = int(input("Enter the k value (no. of outgoing edges) for the similairty graph: "))
     sim_graph = getSimGraph(np.array(sim_mat), k)
     # print(sim_graph.shape)
+
+    print("Input the query gestures: ")
+    query_list = list(map(int, input().split()))
+    query_list = [str(num) + ".csv" for num in query_list]
+    print(query_list)
 
     vattene_list, combinato_list, daccordo_list = filterGestureByName(
         labeled_gest_list, labels)
