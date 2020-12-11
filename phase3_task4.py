@@ -6,13 +6,16 @@
 # given list of irrelevant and relevant gestures
 def reorder_results(results, relevantList, irrelevantList):
     new_results = []
+    neutral_results = []
     last_results = []
     for gesture in results:
         if gesture in relevantList:
             new_results.append(gesture)
         elif gesture not in irrelevantList:
-            last_results.append()
-    new_results = new_results + last_results
+            neutral_results.append(gesture)
+        elif gesture in irrelevantList:
+            last_results.append(gesture)
+    new_results = new_results + neutral_results + last_results
     print("Re-ordered results:\n")
     for result in new_results:
         print(result)
@@ -36,16 +39,29 @@ def prob_feedback():
 
 
 if __name__ == "__main__":
-    results_file = open("phase3_query_results.txt", "r")
-    all_results = results_file.readlines()
-    num_all_results = len(all_results)
+    results_file = open("similarGesturesTask6.txt", "r")
+    all_results = results_file.read()
+    all_results.strip("[")
+    all_results.strip("(")
+    all_results.strip("]")
+    all_results.strip(")")
+    all_results.split(", ")
+    num_all_results = len(all_results) / 2
 
-    relevant_results_file = open("relevant_results.txt", "r")
-    relevant_results = relevant_results_file.readlines()
+    relevant_results_file = open("relevent.txt", "r")
+    relevant_results = relevant_results_file.read()
+    relevant_results.strip("'")
+    relevant_results.strip("[")
+    relevant_results.strip("]")
+    relevant_results.split(", ")
     num_relevant = len(relevant_results)
 
-    irrelevant_results_file = open("irrelevant_results.txt", "r")
-    irrelevant_results = irrelevant_results_file.readlines()
+    irrelevant_results_file = open("irrelevent.txt", "r")
+    irrelevant_results = irrelevant_results_file.read()
+    irrelevant_results.strip("'")
+    irrelevant_results.strip("[")
+    irrelevant_results.strip("]")
+    irrelevant_results.split(", ")
     num_irrelevant = len(irrelevant_results)
 
     # decide whether to re-order results or revise query
