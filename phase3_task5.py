@@ -146,7 +146,7 @@ def main():
     """Labeled and Unlabeled gesture vectors"""
     labeled_vectors = []
     unlabeled_vectors = []
-    with open('PCA_tf.pkl', 'rb') as f:
+    with open('PCA_tf_Dataset1.pkl', 'rb') as f:
         vectors = pickle.load(f)
     vectors = vectors.values.tolist()
 
