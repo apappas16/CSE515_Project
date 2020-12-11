@@ -18,7 +18,6 @@ def cos_similarity(vec1, vec2):
     if len(x) > len(y):
         y = np.pad(y, (0, len(x) - len(y)))
     elif len(x) < len(y):
-
         x = np.pad(x, (0, len(y) - len(x)))
     similarity = 1 - spatial.distance.cosine(x, y)
     return similarity
@@ -38,9 +37,8 @@ def tf_loader(directory):
         matrix = []
 
         for sensor in gesture:
-            if "e" not in sensor:
-                tf = float(sensor.split("-")[1].strip())
-                matrix.append(tf)
+            tf = float(sensor.split("-")[1].strip())
+            matrix.append(tf)
         gestures.append(matrix)
     return gestures
 
@@ -85,13 +83,11 @@ def calcSimMatrix():
                 gest_nxn_key_matrix.append(all_nxn_key_gest_scores)
                 gest_nxn_matrix.append(all_nxn_gest_scores)
 
-    sim_file_dir = directory
-    sim_file_dir = sim_file_dir.replace("/", "_")
-    with open("gest-gest_sim_" + sim_file_dir + ".csv", "w+") as f1:
+    with open("gest_sim_phase3.csv", "w+") as f1:
         csvWriter = csv.writer(f1, delimiter=',')
         csvWriter.writerows(gest_nxn_matrix)
 
-    with open("gest-gest_sim_key_" + sim_file_dir + ".csv", "w+") as f2:
+    with open("gest_sim_phase3_key.csv", "w+") as f2:
         csvWriter = csv.writer(f2, delimiter=',')
         csvWriter.writerows(gest_nxn_key_matrix)
 
@@ -107,7 +103,7 @@ def buildGraph(graph, matrix):
             graph.add_edge(currGestName, sim_gesture[0])
 
     nx.draw(graph, with_labels=True)
-    # plt.show()
+    plt.show()
 
 
 # Creates a vector of seeds given an inputted list of n seed gestures
@@ -209,28 +205,4 @@ if __name__ == '__main__':
     for dom_gest in ppr_m:
         most_dom_gest_names.append(dom_gest)
 
-    #plotDomGestures(most_dom_gest_names)
-
-    # Dataset1
-    # 33 67 88
-    # {'88': 0.06042531284753864, '33': 0.05622433289431672, '67': 0.056018348068092985, '60_4': 0.00909153070636155, '186_6': 0.008442441539542688, '88_0': 0.008077798357657222, '88_2': 0.008060404280861593, '39': 0.008053293560758576, '88_4': 0.008019429216552196, '180_9': 0.007832808373242758}
-
-    # Dataset2
-    # 33 67 88
-    # {'33': 0.061321352125431834, '88': 0.0611396316855812, '67': 0.06013752531439585, '33_9': 0.011662457249805403, '33_7': 0.011606302374203195, '33_4': 0.011060752834932217, '33_6': 0.010421063349756062, '58_0': 0.009727298057955124, '185_9': 0.009004367190239008, '88_3': 0.008449969469640044}
-
-    # Dataset3
-    # 33 67 88
-    # {'88': 0.06042531284753864, '33': 0.05622433289431672, '67': 0.056018348068092985, '60_4': 0.00909153070636155, '186_6': 0.008442441539542688, '88_0': 0.008077798357657222, '88_2': 0.008060404280861593, '39': 0.008053293560758576, '88_4': 0.008019429216552196, '180_9': 0.007832808373242758}
-
-    # Dataset4
-    # 187 217 591
-    # {'591': 0.06107461076953513, '187': 0.05863133718220635, '217': 0.057882369366413396, '638_2': 0.015929314090895198, '621_9': 0.01019781207634448, '628_8': 0.010169238501312305, '591_0': 0.00992117114342415, '591_3': 0.009546304152409398, '622_8': 0.009081867004524454, '624_6': 0.00860027640399242}
-
-    # Dataset5
-    # 187 217 591
-    #
-
-    # Dataset6
-    # 187 217 591
-    # {'187': 0.058980381226476315, '591': 0.05828389838373999, '217': 0.05678511518895491, '621': 0.017500358214620437, '622': 0.016276896362429433, '623': 0.0131793459515908, '649_2': 0.009217410197915074, '633_1': 0.008761468718143756, '622_7': 0.008758572754357362, '631_6': 0.008740653253273455}
+    plotDomGestures(most_dom_gest_names)
