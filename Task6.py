@@ -392,6 +392,7 @@ elif user_option == 2 :
     pca = pca.T
     key_vec = pca[key_idx]
     cost=[]
+    
     for idx in range(num) :
         similarity = pears_similarity(key_vec, pca[idx])
         cost.append(similarity)
@@ -496,10 +497,16 @@ else:
 file = open("similarGesturesTask6.txt", "w")
 outputList = []
 
-print("Most similar (gesture, score) ")              
-for k in cost_top_K :                                                       
-    print((cost.index(k), k))  
-    outputList.append((cost.index(k), k))
+print("Most similar (gesture, score) ")    
+for k in cost_top_K :    
+    c = 0
+    poop = cost.index(k)
+    for fileK in glob.glob("Dataset 5/" + "X/"+ "*.csv"):
+        if c == poop:
+            outputList.append((fileK.replace("Dataset 5/X\\", ""), k))
+            print((fileK.replace("Dataset 5/X\\", ""), k))
+            break
+        c = c + 1 
 file.write(str(outputList))
     
 file.close()
@@ -553,12 +560,6 @@ releventFile.close()
 irreleventFile.close()
 
 while run == True:
-    """gestfile = input("W (ex: 1.csv, or exit for termination): ")
-    
-    #exit loop
-    if gestfile == "exit":
-        run = False
-        break"""
 
     taskNum = input("Please enter the relevence technique you would like (enter probabilistic or classifier_based): ")
     resultNum = input("Please enter the number of results you would like to recieve: (ex: 5): ")
